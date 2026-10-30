@@ -1,0 +1,772 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TotalOps Documentation — Admin Guide</title>
+<meta name="description" content="Simple, example-driven guide to every TotalOps admin module: dashboard, projects, scheduling, 3D tint visualizer, smart film advisor, proposals, payments, inventory, automations, reports and settings.">
+<link rel="icon" href="/icon.svg">
+<style>
+  :root {
+    --bg: #f6f7fb; --card: #ffffff; --fg: #141a2e; --muted: #5d6478; --line: #e3e6ef; --soft: #eef0f8;
+    --primary: #5b5bf7; --primary-soft: #ececfe; --accent: #f59e0b; --ok: #12925f; --warn: #b46a00; --bad: #d23c3c;
+    --side: #0d0d22; --side-fg: #c9cbe6; --side-muted: #7d80a6;
+    --radius: 14px; --shadow: 0 1px 2px rgba(15,23,42,.04), 0 6px 20px -8px rgba(15,23,42,.12);
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; font: 15px/1.65 Inter, "Segoe UI", Roboto, system-ui, -apple-system, sans-serif; color: var(--fg); background: var(--bg); }
+  a { color: var(--primary); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code, kbd { font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size: 12.5px; background: var(--soft); border: 1px solid var(--line); border-radius: 6px; padding: 1px 6px; }
+
+  /* Layout */
+  .sidebar { position: fixed; inset: 0 auto 0 0; width: 280px; background: var(--side); color: var(--side-fg); display: flex; flex-direction: column; z-index: 20; transition: transform .25s ease; }
+  .brand { display: flex; align-items: center; gap: 10px; padding: 18px 20px; border-bottom: 1px solid rgba(255,255,255,.08); }
+  .brand-mark { width: 34px; height: 34px; border-radius: 10px; background: linear-gradient(135deg,#5b5bf7,#c026d3 60%,#f59e0b); display: grid; place-items: center; color: #fff; font-weight: 800; box-shadow: 0 6px 16px rgba(91,91,247,.45); }
+  .brand b { color: #fff; font-size: 18px; letter-spacing: -.02em; }
+  .brand small { display: block; color: var(--side-muted); font-size: 11px; margin-top: -2px; }
+  .search { padding: 14px 16px 6px; }
+  .search input { width: 100%; padding: 9px 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.06); color: #fff; font: inherit; font-size: 13px; outline: none; }
+  .search input:focus { border-color: #8b8df8; background: rgba(255,255,255,.1); }
+  nav.menu { overflow-y: auto; padding: 6px 10px 24px; flex: 1; }
+  .group { margin-top: 12px; }
+  .group-title { font-size: 10px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--side-muted); padding: 6px 12px; }
+  .menu a { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 10px; color: var(--side-fg); font-size: 14px; font-weight: 500; transition: background .15s, color .15s; }
+  .menu a:hover { background: rgba(255,255,255,.06); color: #fff; text-decoration: none; }
+  .menu a.active { background: linear-gradient(90deg, rgba(91,91,247,.35), rgba(192,38,211,.18)); color: #fff; box-shadow: inset 0 0 0 1px rgba(139,141,248,.35); }
+  .menu .ico { width: 22px; text-align: center; font-size: 15px; }
+  .menu .tag { margin-left: auto; font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 6px; background: linear-gradient(90deg,#5b5bf7,#c026d3); color: #fff; }
+  .side-foot { padding: 12px 18px; border-top: 1px solid rgba(255,255,255,.08); font-size: 12px; color: var(--side-muted); }
+
+  main { margin-left: 280px; min-height: 100vh; }
+  .topbar { position: sticky; top: 0; z-index: 10; display: flex; align-items: center; gap: 12px; padding: 14px 32px; background: rgba(246,247,251,.85); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
+  .crumb { font-size: 13px; color: var(--muted); }
+  .crumb b { color: var(--fg); }
+  .menu-btn { display: none; border: 1px solid var(--line); background: var(--card); border-radius: 10px; padding: 6px 10px; font-size: 18px; cursor: pointer; }
+  .content { max-width: 980px; padding: 32px; margin: 0 auto; }
+
+  /* Sections */
+  section.doc { display: none; animation: fade .35s ease; }
+  section.doc.active { display: block; }
+  @keyframes fade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  .hero { border-radius: 20px; padding: 28px 30px; color: #fff; background: radial-gradient(circle at 85% 0%, rgba(192,38,211,.55), transparent 45%), radial-gradient(circle at 0% 100%, rgba(91,91,247,.6), transparent 50%), #0d0d22; box-shadow: var(--shadow); margin-bottom: 26px; }
+  .hero .eyebrow { font-size: 11px; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; color: #b9bbff; }
+  .hero h1 { margin: 6px 0 8px; font-size: 30px; letter-spacing: -.02em; line-height: 1.2; }
+  .hero p { margin: 0; color: rgba(255,255,255,.78); max-width: 720px; }
+  .hero .path { display: inline-block; margin-top: 14px; font-size: 12px; background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.16); border-radius: 8px; padding: 3px 9px; color: #fff; }
+  h2 { font-size: 19px; margin: 30px 0 10px; letter-spacing: -.01em; display: flex; align-items: center; gap: 8px; }
+  h2 .n { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 8px; background: var(--primary-soft); color: var(--primary); font-size: 13px; }
+  h3 { font-size: 15px; margin: 18px 0 6px; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; margin: 8px 0; }
+  li { margin: 4px 0; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 20px; box-shadow: var(--shadow); margin: 12px 0; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; margin: 12px 0; }
+  .grid .card { margin: 0; }
+  .card h4 { margin: 0 0 4px; font-size: 14.5px; }
+  .card p { margin: 0; color: var(--muted); font-size: 13.5px; }
+  .why { border-left: 4px solid var(--primary); background: linear-gradient(90deg, var(--primary-soft), transparent); padding: 12px 16px; border-radius: 0 12px 12px 0; margin: 12px 0; }
+  .example { border: 1px dashed #c7c9f7; background: #fbfbff; border-radius: 12px; padding: 14px 16px; margin: 14px 0; }
+  .example::before { content: "Example"; display: table; font-size: 10.5px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: #fff; background: var(--primary); border-radius: 6px; padding: 2px 8px; margin-bottom: 8px; }
+  .tip, .warn { border-radius: 12px; padding: 12px 16px; margin: 12px 0; font-size: 14px; }
+  .tip { background: #ecfdf5; border: 1px solid #bdeed6; color: #0b5d3e; }
+  .tip b, .warn b { display: block; margin-bottom: 2px; }
+  .warn { background: #fff7e8; border: 1px solid #f6dcaa; color: #7a4a00; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; background: var(--card); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; font-size: 13.5px; }
+  th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: var(--soft); font-size: 11.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+  tr:last-child td { border-bottom: 0; }
+  .pill { display: inline-block; font-size: 11.5px; font-weight: 700; padding: 2px 9px; border-radius: 999px; background: var(--soft); color: var(--muted); margin: 2px 2px 2px 0; }
+  .pill.p { background: var(--primary-soft); color: var(--primary); }
+  .pill.g { background: #e6f7ef; color: var(--ok); }
+  .pill.y { background: #fff3dc; color: var(--warn); }
+  .pill.r { background: #fde8e8; color: var(--bad); }
+  .flow { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 12px 0; }
+  .flow span { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 6px 11px; font-size: 13px; font-weight: 600; box-shadow: var(--shadow); }
+  .flow i { color: var(--muted); font-style: normal; }
+  .pager { display: flex; justify-content: space-between; gap: 12px; margin: 40px 0 10px; padding-top: 20px; border-top: 1px solid var(--line); }
+  .pager a { flex: 1; border: 1px solid var(--line); background: var(--card); border-radius: 12px; padding: 12px 16px; box-shadow: var(--shadow); }
+  .pager a:hover { text-decoration: none; border-color: #b9bbff; }
+  .pager small { display: block; color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .08em; }
+  .pager .next { text-align: right; }
+  .empty { display: none; padding: 10px 14px; color: var(--side-muted); font-size: 13px; }
+
+  @media (max-width: 900px) {
+    .sidebar { transform: translateX(-100%); }
+    body.open .sidebar { transform: none; box-shadow: 0 0 0 100vmax rgba(0,0,0,.45); }
+    main { margin-left: 0; }
+    .menu-btn { display: inline-block; }
+    .content { padding: 20px 16px; }
+    .topbar { padding: 12px 16px; }
+    .hero h1 { font-size: 24px; }
+  }
+  @media print { .sidebar, .topbar, .pager { display: none; } main { margin: 0; } section.doc { display: block !important; page-break-after: always; } }
+</style>
+</head>
+<body>
+
+<aside class="sidebar" aria-label="Documentation menu">
+  <div class="brand">
+    <div class="brand-mark">T</div>
+    <div><b>TotalOps</b><small>Admin documentation</small></div>
+  </div>
+  <div class="search"><input id="q" type="search" placeholder="Search menus…" aria-label="Search menus"></div>
+  <nav class="menu" id="menu">
+    <div class="group"><div class="group-title">Overview</div>
+      <a href="#dashboard"><span class="ico">▦</span>Dashboard</a>
+      <a href="#my-day"><span class="ico">☑</span>My Day</a>
+      <a href="#notifications"><span class="ico">🔔</span>Notifications</a>
+    </div>
+    <div class="group"><div class="group-title">Workspace</div>
+      <a href="#projects"><span class="ico">💼</span>Projects</a>
+      <a href="#pipeline"><span class="ico">▤</span>Pipeline</a>
+      <a href="#customers"><span class="ico">👤</span>Customers</a>
+    </div>
+    <div class="group"><div class="group-title">Planning</div>
+      <a href="#calendar"><span class="ico">📅</span>Calendar</a>
+      <a href="#planning"><span class="ico">🗺</span>Planning board</a>
+      <a href="#shop-day"><span class="ico">🚗</span>Auto Shop Day</a>
+      <a href="#team"><span class="ico">👥</span>My Team</a>
+    </div>
+    <div class="group"><div class="group-title">AI Studio</div>
+      <a href="#visualizer"><span class="ico">✨</span>3D Visualizer<span class="tag">AI</span></a>
+      <a href="#advisor"><span class="ico">🧠</span>Smart Advisor<span class="tag">AI</span></a>
+      <a href="#films"><span class="ico">🎞</span>Film Library</a>
+    </div>
+    <div class="group"><div class="group-title">Business</div>
+      <a href="#proposals"><span class="ico">📄</span>Proposals</a>
+      <a href="#payments"><span class="ico">💳</span>Payments</a>
+      <a href="#inventory"><span class="ico">📦</span>Inventory</a>
+    </div>
+    <div class="group"><div class="group-title">Operations</div>
+      <a href="#notes"><span class="ico">📝</span>Notes &amp; tasks</a>
+      <a href="#files"><span class="ico">📁</span>Files &amp; photos</a>
+      <a href="#reviews"><span class="ico">⭐</span>Reviews</a>
+      <a href="#lead-forms"><span class="ico">📣</span>Lead forms</a>
+      <a href="#automations"><span class="ico">⚙</span>Automations</a>
+      <a href="#reports"><span class="ico">📊</span>Reports</a>
+    </div>
+    <div class="group"><div class="group-title">Administration</div>
+      <a href="#settings"><span class="ico">🛠</span>Settings</a>
+    </div>
+    <p class="empty" id="empty">No menu matches your search.</p>
+  </nav>
+  <div class="side-foot">Login: admin only · Press <code>/</code> to search</div>
+</aside>
+
+<main>
+  <div class="topbar">
+    <button class="menu-btn" id="menuBtn" aria-label="Open menu">☰</button>
+    <div class="crumb">TotalOps docs › <b id="crumb">Dashboard</b></div>
+  </div>
+  <div class="content" id="content">
+
+<!-- ======================================================= DASHBOARD -->
+<section class="doc" id="dashboard" data-title="Dashboard">
+  <div class="hero"><div class="eyebrow">Overview</div><h1>Dashboard</h1>
+    <p>The first screen after login. One look tells you how the business is doing today: money in, money owed, jobs booked and what needs your attention.</p><span class="path">Menu → Dashboard · /dashboard</span></div>
+
+  <div class="why"><b>Why it exists:</b> instead of opening ten screens every morning, the owner sees revenue, open jobs, overdue invoices, today's bookings and problems in one place.</div>
+
+  <h2><span class="n">1</span>Top bar (visible on every page)</h2>
+  <table>
+    <tr><th>Control</th><th>What it does</th></tr>
+    <tr><td><b>Search</b> (<kbd>Ctrl</kbd>+<kbd>K</kbd>)</td><td>Find any project, customer, vehicle make/model, rego, team member or film — or jump to any page.</td></tr>
+    <tr><td><b>All stores</b> switcher</td><td>Filters dashboards, lists and schedules to one branch. Choose "All stores" to see everything.</td></tr>
+    <tr><td><b>Moon / sun</b></td><td>Switch dark / light theme. Your choice is remembered.</td></tr>
+    <tr><td><b>Bell</b></td><td>Latest notifications. A red dot means unread items.</td></tr>
+    <tr><td><b>+ New lead</b></td><td>Opens the New project form straight away.</td></tr>
+  </table>
+
+  <h2><span class="n">2</span>KPI cards</h2>
+  <p>Choose the period at the top right: <span class="pill p">30 days</span><span class="pill">90 days</span><span class="pill">12 months</span>. The arrow shows the change against the previous period of the same length.</p>
+  <div class="grid">
+    <div class="card"><h4>Revenue (invoiced)</h4><p>Total of invoices issued in the period.</p></div>
+    <div class="card"><h4>Collected</h4><p>Payments and deposits actually received.</p></div>
+    <div class="card"><h4>Active projects</h4><p>Open jobs, split Automotive / Residential / Commercial.</p></div>
+    <div class="card"><h4>Outstanding payments</h4><p>Money still owed on invoices, how many are overdue and by how many days on average.</p></div>
+    <div class="card"><h4>Proposals awaiting</h4><p>Quotes sent or viewed but not yet approved, with their value.</p></div>
+    <div class="card"><h4>Pipeline value</h4><p>Value of all open jobs, plus the conversion rate.</p></div>
+    <div class="card"><h4>Booked today</h4><p>Appointments on today's run sheet.</p></div>
+    <div class="card"><h4>New leads</h4><p>Leads created in the last 7 days and today.</p></div>
+  </div>
+
+  <h2><span class="n">3</span>Panels</h2>
+  <ul>
+    <li><b>Revenue trend</b> — invoiced vs collected for the last 12 months (switch Monthly / Quarterly).</li>
+    <li><b>Jobs / Revenue by segment</b> — donut showing where your work and money come from.</li>
+    <li><b>Action centre</b> — the to-do list the system builds for you: overdue invoices, proposals with no reply for 2+ days, approved jobs not yet booked, leads waiting for first contact, unread customer replies, low film stock. Click any row to open it.</li>
+    <li><b>Today's schedule</b> — every visit today, its time, customer, store and installer.</li>
+    <li><b>Recent activity</b> — live feed of what happened (quotes sent, payments, bookings…).</li>
+    <li><b>Projects by stage</b>, <b>Installer workload</b> (hours booked vs capacity this week), <b>Low stock</b> and <b>Lead sources</b>.</li>
+  </ul>
+  <div class="example">You open the dashboard at 8 am. The Action centre shows "Overdue invoice INV-2014 · $495". You click it, land on the project, and use <b>Send customer message</b> to remind the customer. Done in 30 seconds.</div>
+  <div class="tip"><b>Good to know</b>The dashboard refreshes itself every minute, and opening it also runs time-based automations (for example "proposal sent, no response after 48 hours").</div>
+</section>
+
+<!-- ======================================================= MY DAY -->
+<section class="doc" id="my-day" data-title="My Day">
+  <div class="hero"><div class="eyebrow">Overview</div><h1>My Day</h1>
+    <p>The installer's run sheet for one day — built for a phone in the workshop or on site.</p><span class="path">Menu → My Day · /jobs</span></div>
+  <div class="why"><b>Why it exists:</b> installers don't need the whole CRM. They need "where am I going, what am I fitting, and what do I tap when I'm done".</div>
+  <h2><span class="n">1</span>What you see</h2>
+  <ul>
+    <li><b>Installer picker</b> (remembered on that device) and a <b>date picker</b>.</li>
+    <li>Counters: on today's run sheet, ready to work, completed.</li>
+    <li>A timeline card per visit: time, customer, vehicle or address, film &amp; shade, number of panes and notes.</li>
+  </ul>
+  <h2><span class="n">2</span>Buttons on each job</h2>
+  <table>
+    <tr><th>Button</th><th>What happens</th></tr>
+    <tr><td>Call</td><td>Dials the customer.</td></tr>
+    <tr><td>Directions</td><td>Opens maps to the job address.</td></tr>
+    <tr><td>On the way</td><td>Marks the visit <span class="pill y">Dispatched</span> (can send an "installer on the way" SMS if that automation is on).</td></tr>
+    <tr><td>Check in</td><td>Marks <span class="pill p">Checked in</span>. For installations the project moves to <b>In progress</b>.</td></tr>
+    <tr><td>Mark complete</td><td>Marks <span class="pill g">Completed</span>. For installations the job is marked installed and moves to <b>Invoicing</b>.</td></tr>
+    <tr><td>Measurements</td><td>Opens the project's measurement sheet.</td></tr>
+  </table>
+  <div class="example">Jake opens My Day, picks his name, sees "08:30 · Tesla Model Y · XPEL 20%". He taps <b>Check in</b> when the car is in the bay and <b>Mark complete</b> when finished. The office instantly sees the job ready for invoicing.</div>
+  <div class="warn"><b>Rule</b>You must check in before you can complete a visit.</div>
+</section>
+
+<!-- ======================================================= NOTIFICATIONS -->
+<section class="doc" id="notifications" data-title="Notifications">
+  <div class="hero"><div class="eyebrow">Overview</div><h1>Notifications</h1>
+    <p>A full history of everything that happened in the workspace, grouped by day.</p><span class="path">Menu → Notifications · /notifications</span></div>
+  <div class="why"><b>Why it exists:</b> so nothing gets missed — a customer approval at 9 pm, a deposit, a low-stock warning.</div>
+  <ul>
+    <li>Filter <span class="pill p">All</span> or <span class="pill">Unread</span>. Groups: Today, Yesterday, then dates.</li>
+    <li>Click an item to mark it read and jump to the project / page it belongs to.</li>
+    <li>Mark read / unread, delete (with an <b>Undo</b> button), <b>Read all</b>, <b>Delete all</b> (asks first).</li>
+  </ul>
+  <h3>Examples of events that create notifications</h3>
+  <p><span class="pill">New lead</span><span class="pill">Proposal sent / viewed / approved</span><span class="pill">Installation scheduled</span><span class="pill">Installer checked in</span><span class="pill">Deposit paid</span><span class="pill">Payment received</span><span class="pill">Invoice created</span><span class="pill">Low film stock</span><span class="pill">Automation ran</span></p>
+</section>
+
+<!-- ======================================================= PROJECTS -->
+<section class="doc" id="projects" data-title="Projects">
+  <div class="hero"><div class="eyebrow">Workspace</div><h1>Projects</h1>
+    <p>Every job lives here — from the first enquiry to the final payment. A project holds the customer, vehicle or property, measurements, appointments, quote, invoice, payments, files, notes and messages.</p><span class="path">Menu → Projects · /projects</span></div>
+  <div class="why"><b>Why it exists:</b> one record per job means nobody asks "where is the quote?" or "did they pay the deposit?" — it is all on the same page.</div>
+
+  <h2><span class="n">1</span>Projects list</h2>
+  <ul>
+    <li>Table or card view, search (name, number, rego, address…), filters for stage, segment, source and archived, plus the global store switcher.</li>
+    <li>Sort columns, see totals, and <b>Export CSV</b>.</li>
+  </ul>
+
+  <h2><span class="n">2</span>Create a new project (New lead)</h2>
+  <ol>
+    <li>Pick the segment: <span class="pill p">Automotive</span><span class="pill">Residential</span><span class="pill">Commercial</span>.</li>
+    <li>Choose an existing customer or type a new one (name, phone, email…).</li>
+    <li>Automotive: year, make, model, <b>body type</b>, colour, rego. Residential/commercial: address, glazing type, orientation.</li>
+    <li>Store, owner, source (Website, Google, Referral…), priority, tags and notes → <b>Create</b>.</li>
+  </ol>
+  <div class="example">New lead: "Liam Walker · 2024 Toyota Hilux · body type <b>Dual-cab ute</b>". Because the body type is set, TotalOps automatically fills the measurement sheet with the Hilux glass sizes (front doors, rear doors, rear cab glass). The project gets a number such as <code>PRJ-1072</code>.</div>
+
+  <h2><span class="n">3</span>Project stages</h2>
+  <div class="flow"><span>New lead</span><i>→</i><span>Consultation</span><i>→</i><span>Measurements</span><i>→</i><span>Proposal</span><i>→</i><span>Approval</span><i>→</i><span>Scheduled</span><i>→</i><span>In progress</span><i>→</i><span>Invoicing</span><i>→</i><span>Job closed</span></div>
+  <p>Click a stage in the stepper at the top of a project to move it. TotalOps checks the rules on the server, so jobs can't skip important steps:</p>
+  <table>
+    <tr><th>To move to…</th><th>You first need…</th></tr>
+    <tr><td>Proposal or later</td><td>A proposal created</td></tr>
+    <tr><td>Approval</td><td>The proposal sent to the customer</td></tr>
+    <tr><td>Scheduled</td><td>An installation appointment booked</td></tr>
+    <tr><td>In progress</td><td>Installer checked in to the installation</td></tr>
+    <tr><td>Invoicing</td><td>Installation completed (or invoice created)</td></tr>
+    <tr><td>Job closed</td><td>Installation complete <b>and</b> paid in full</td></tr>
+  </table>
+  <div class="tip"><b>Automatic stage moves</b>You rarely need to move stages by hand: sending a proposal moves to Proposal, customer approval to Approval, booking an installation to Scheduled, check-in to In progress, completion to Invoicing, and the final payment closes the job.</div>
+  <div class="warn"><b>No going back</b>Once a job is Scheduled it can't move to an earlier stage, and an invoiced job can't move before Invoicing.</div>
+
+  <h2><span class="n">4</span>Inside a project — the 7 tabs</h2>
+  <h3>Overview</h3>
+  <p>A "next move" suggestion, vehicle/property and location, <b>film &amp; shade</b> picker, special requirements, the next appointment and an activity timeline of everything that happened.</p>
+  <h3>Appointments</h3>
+  <p>Book consultation, measurement, installation, site visit or collection. Pick date, start/end, store, lead installer (only installers of that store), co-installers, bay, in-shop/on-site, address, dealer, notes and reminder. Actions: check in, on the way, complete, reopen, remove, and shop status.</p>
+  <div class="warn"><b>Double-booking protection</b>If the installer or the bay is already booked at that time you get a clear message, e.g. "Jake Reynolds is already booked 09:00–11:00 on 2026-11-02 (PRJ-1005)".</div>
+  <h3>Measurements</h3>
+  <ul>
+    <li>Areas (rooms / zones) with panes: label, window type or vehicle zone, width, height, unit (mm, cm, m, in, ft), quantity, film, include tick.</li>
+    <li><b>Load vehicle template</b> for 8 body styles, plus optional windscreen visor strip and sunroof.</li>
+    <li><b>Voice measure</b>: tap the mic and say it — the pane is added automatically.</li>
+    <li>Installer checklist, a <b>Verified</b> switch, notes and CSV export.</li>
+    <li><b>Cut plan</b>: shows how the panes fit on the roll, linear metres and waste %.</li>
+    <li><b>Smart recommend</b>: runs the Smart Advisor on this sheet and lets you apply the best film.</li>
+  </ul>
+  <div class="example">Voice: "<b>Master bedroom, window 1, 34 and a half by 60 inches</b>" → room <i>Master bedroom</i>, pane <i>Window 1</i>, 34.5 × 60 in, qty 1.<br>Voice: "<b>Quarter glass, 350 by 250 mm, 2 panes</b>" → 350 × 250 mm, qty 2.</div>
+  <h3>Quote &amp; invoice</h3>
+  <p>Build the customer offer (see <a href="#proposals">Proposals</a> for how options work), then create the invoice, print it, send it, and record deposits/payments.</p>
+  <ul>
+    <li><b>Start from package</b> — copy a saved proposal package.</li>
+    <li><b>Price from measurements</b> — creates lines from the measured m² × film sell price.</li>
+    <li><b>Send</b> — creates the customer review link and logs an email (simulated).</li>
+    <li><b>Customer review link</b> — create, copy, open, or withdraw it.</li>
+    <li><b>Record simulated approval</b> — when the customer approves by phone or in person.</li>
+  </ul>
+  <h3>Install &amp; notes</h3>
+  <p>Install progress (pending → in progress → complete), check-in / complete buttons, plus notes and tasks for this job.</p>
+  <h3>Files &amp; photos</h3>
+  <p>Drag-and-drop photos and documents (before/after photos, signed forms). Preview, download or delete.</p>
+  <h3>Messages</h3>
+  <p>SMS-style thread with the customer. Use a template or type freely; variables like <code>{{first_name}}</code> are filled in. <b>Simulate customer reply</b> is for testing.</p>
+
+  <h2><span class="n">5</span>Actions menu (top right of a project)</h2>
+  <p>Edit project details · Edit customer contact · Send customer message · Copy project link · Duplicate · Archive / Restore · Delete permanently.</p>
+  <div class="warn"><b>Deleting</b>A project must be archived first, and projects with an invoice or payments can never be deleted — they stay archived to protect financial history.</div>
+</section>
+
+<!-- ======================================================= PIPELINE -->
+<section class="doc" id="pipeline" data-title="Pipeline">
+  <div class="hero"><div class="eyebrow">Workspace</div><h1>Pipeline</h1>
+    <p>A Kanban board of all open projects. Each column is a stage; drag cards to move them forward.</p><span class="path">Menu → Pipeline · /pipeline</span></div>
+  <div class="why"><b>Why it exists:</b> it shows at a glance where jobs are stuck — e.g. 12 jobs sitting in "Proposal" means follow-ups are needed.</div>
+  <ul>
+    <li>Each column shows the number of jobs and their total value.</li>
+    <li>Drag a card to another stage. If a rule blocks it (see <a href="#projects">Projects → stages</a>) you get a message and the card snaps back.</li>
+    <li><b>Group by</b>: Stage, Store, Segment or Installer. Dragging works only when grouped by Stage.</li>
+  </ul>
+  <div class="example">You drag "Kia Sportage · full tint" from Proposal to Scheduled. TotalOps replies "Book an installation before marking this project scheduled." — so you open the project and book the bay first.</div>
+</section>
+
+<!-- ======================================================= CUSTOMERS -->
+<section class="doc" id="customers" data-title="Customers">
+  <div class="hero"><div class="eyebrow">Workspace</div><h1>Customers</h1>
+    <p>Your contact book — people and businesses, with their linked projects and total value.</p><span class="path">Menu → Customers · /customers</span></div>
+  <div class="why"><b>Why it exists:</b> repeat customers and fleet clients bring the most work. Keeping contacts separate from jobs lets one customer have many projects.</div>
+  <ul>
+    <li>Search and filter by status (Prospect / Active / Inactive), segment and source.</li>
+    <li>Add / edit a contact, open the contact drawer to see all linked projects, and click <b>New project</b> to start a job for that customer.</li>
+    <li><b>Import CSV</b> and <b>Export CSV</b>.</li>
+  </ul>
+  <h3>CSV import format</h3>
+  <table>
+    <tr><th>Column</th><th>Notes</th></tr>
+    <tr><td>name</td><td>Required</td></tr>
+    <tr><td>email, phone</td><td>Used to skip duplicates</td></tr>
+    <tr><td>company, address</td><td>Optional</td></tr>
+    <tr><td>segment</td><td>automotive / residential / commercial</td></tr>
+    <tr><td>source, status, store, tags</td><td>Store must match a store name; tags separated by <code>;</code></td></tr>
+  </table>
+  <div class="example"><code>name,phone,email,segment,store<br>Ruby Kennedy,0412 555 101,ruby@example.com,automotive,Mandurah</code><br>Result: "1 created · 0 duplicates skipped".</div>
+  <div class="warn"><b>Delete rule</b>A contact with linked projects can't be deleted — archive the projects instead.</div>
+</section>
+
+<!-- ======================================================= CALENDAR -->
+<section class="doc" id="calendar" data-title="Calendar">
+  <div class="hero"><div class="eyebrow">Planning</div><h1>Calendar</h1>
+    <p>All appointments across stores in Month, Week or Day view.</p><span class="path">Menu → Calendar · /calendar</span></div>
+  <div class="why"><b>Why it exists:</b> the office books work around real installer and bay availability instead of guessing.</div>
+  <ul>
+    <li>Week/Day view shows a 07:00–18:00 grid, blocks coloured by installer, overlapping visits side by side and a red "now" line.</li>
+    <li><b>Click an empty slot</b> → the booking form opens with that date and time filled in.</li>
+    <li><b>Click a visit</b> → a side panel with details and actions: on the way, check in, complete, reschedule, open project, remove.</li>
+    <li>Filters: installer and appointment type. The store switcher in the top bar also applies.</li>
+  </ul>
+  <div class="example">Click Tuesday 10:00 in Week view → choose project "Ford Everest · ceramic", installer "Ryan Cooper", Bay 2, 10:00–13:00 → Save. If Bay 2 is taken you'll be told before anything is saved.</div>
+</section>
+
+<!-- ======================================================= PLANNING -->
+<section class="doc" id="planning" data-title="Planning board">
+  <div class="hero"><div class="eyebrow">Planning</div><h1>Planning board</h1>
+    <p>"Total Planning" — people, bookings and spare capacity for one day or a week, per store and per installer.</p><span class="path">Menu → Planning board · /planning</span></div>
+  <div class="why"><b>Why it exists:</b> to fill empty hours and balance work between installers and branches.</div>
+  <ul>
+    <li>Choose Day or Week, pick stores, then see one row per installer with a <b>capacity bar</b> (booked hours vs store opening hours).</li>
+    <li>Filter by service type and status; search a job or customer.</li>
+    <li><b>Drag a visit</b> to another installer or day — you confirm, then it is saved (conflicts are still checked).</li>
+    <li><b>Ready to plan</b>: approved jobs that have no installation booked yet. Press <b>Schedule</b> to book one.</li>
+    <li>Export the plan as CSV, or expand to full screen for the office TV.</li>
+  </ul>
+  <div class="example">Mia is at 95% this week and Lucas at 40%. Drag two of Mia's Thursday visits onto Lucas's row → both installers are now balanced.</div>
+</section>
+
+<!-- ======================================================= SHOP DAY -->
+<section class="doc" id="shop-day" data-title="Auto Shop Day">
+  <div class="hero"><div class="eyebrow">Planning</div><h1>Auto Shop Day</h1>
+    <p>A high-volume automotive run sheet with one-tap bay status, plus a live portal you can share with dealerships.</p><span class="path">Menu → Auto Shop Day · /shop-day</span></div>
+  <div class="why"><b>Why it exists:</b> on busy days with dealer fleets, the front desk needs to know which car is where — and dealers want updates without phoning.</div>
+  <h2><span class="n">1</span>Run sheet</h2>
+  <ul>
+    <li>Tiles: vehicles booked today, in tint bay now, queued / drop-off, ready for pickup.</li>
+    <li>Filter by account: all, retail customers, or one dealer.</li>
+    <li>Each row: time &amp; bay, vehicle &amp; rego, dealer, film package, technicians and status buttons.</li>
+    <li>Refreshes every 30 seconds.</li>
+  </ul>
+  <div class="flow"><span>Booked</span><i>→</i><span>Arrived</span><i>→</i><span>In Bay</span><i>→</i><span>Installing</span><i>→</i><span>Ready for Pickup</span><i>→</i><span>Collected</span></div>
+  <div class="tip"><b>What the status buttons also do</b>In Bay / Installing checks the installer in. Ready for Pickup completes the installation (job moves to Invoicing) and can send the "your vehicle is ready" SMS automation.</div>
+  <h2><span class="n">2</span>Live dealer portal</h2>
+  <p>Press <b>Copy live dealer link</b> next to a dealer and send it to them. The link opens a read-only page (no login) that refreshes every 20 seconds and shows:</p>
+  <ul><li>Today's vehicles with status tabs (All, In bay, Queued, Ready).</li><li>For each car: bay, technicians, stock/PO number, film brand, VLT, heat rejection, UV, warranty, glass measurements and total m², plus pickup / aftercare notes.</li></ul>
+  <div class="example">Brett from Brett's Prestige Auto keeps the portal open on his office screen. When the Hilux turns "Ready for Pickup" he sends a driver — no phone call needed.</div>
+  <div class="warn"><b>Security</b>Anyone with the link can view it. If a link is shared by mistake, create a new one in Settings → Dealers (the old link stops working).</div>
+</section>
+
+<!-- ======================================================= TEAM -->
+<section class="doc" id="team" data-title="My Team">
+  <div class="hero"><div class="eyebrow">Planning</div><h1>My Team</h1>
+    <p>Team members, weekly workload and a live dispatch view across all stores.</p><span class="path">Menu → My Team · /team</span></div>
+  <div class="why"><b>Why it exists:</b> to know who is busy, who is free and where everyone is right now.</div>
+  <table>
+    <tr><th>Tab</th><th>What it shows</th></tr>
+    <tr><td>Team Members</td><td>Cards with name, title, store, skills, phone, rating and next job. Add, edit, mark inactive or delete.</td></tr>
+    <tr><td>Workload Capacity</td><td>Week navigator; booked hours vs weekly hours for each technician, a daily breakdown and overall utilisation (70–85% is the healthy range).</td></tr>
+    <tr><td>Live Dispatch</td><td>A map of your store hubs with today's jobs per installer and their state: In-shop, On-site, En-route or Standby.</td></tr>
+  </table>
+  <div class="warn"><b>Delete rule</b>Team members with appointments or projects can't be deleted — mark them inactive instead. (Team members don't log in; only the admin does.)</div>
+</section>
+
+<!-- ======================================================= VISUALIZER -->
+<section class="doc" id="visualizer" data-title="3D Visualizer">
+  <div class="hero"><div class="eyebrow">AI Studio</div><h1>3D Tint Visualizer</h1>
+    <p>Show customers their car in 3D with tint on every window — the exact film and shade, legal check included — before they book.</p><span class="path">Menu → 3D Visualizer · /visualizer</span></div>
+  <div class="why"><b>Why it exists:</b> customers find it hard to imagine "20% vs 35%". Seeing their own car (and the legal limit) closes the sale faster and avoids comebacks.</div>
+
+  <h2><span class="n">1</span>Viewer controls</h2>
+  <ul>
+    <li>Camera: <span class="pill">Front ¾</span><span class="pill">Side</span><span class="pill">Rear</span><span class="pill">Top</span><span class="pill">Inside</span> — Inside shows the view from the driver's seat looking out.</li>
+    <li>Light: <span class="pill">Day</span><span class="pill">Sunset</span><span class="pill">Night</span><span class="pill">Studio</span> and <b>Rotate</b>. Drag to orbit, scroll to zoom.</li>
+    <li>Badge top-right: <span class="pill g">Legal in AU-WA</span> or a red warning if any window is too dark.</li>
+    <li>Cards below: average solar heat rejected, estimated parked-cabin cooling and the region rule.</li>
+  </ul>
+
+  <h2><span class="n">2</span>Tint tab</h2>
+  <ul>
+    <li><b>Quick packages</b>: Factory clear, Legal max (darkest legal ceramic), Privacy, Heat shield 70, Limo 5%.</li>
+    <li>Per zone — front side windows, rear side windows &amp; quarters, rear windscreen, sunroof: choose film and shade. The chip shows the combined VLT and the legal minimum, e.g. <code>85% / min 35%</code>.</li>
+    <li><b>Windscreen visor strip</b> on/off (sized from the region rule, e.g. top 10%).</li>
+  </ul>
+  <div class="tip"><b>How "combined VLT" works</b>Glass already blocks some light. Combined VLT = film VLT × factory glass. Example: a 35% film on 85% front glass = 29.75% combined — below WA's 35% front minimum, so TotalOps marks it red.</div>
+
+  <h2><span class="n">3</span>Vehicle tab</h2>
+  <p>8 body types (sedan, hatch, SUV, wagon, dual-cab ute, single-cab ute, coupe, van), paint palette or custom colour, finish (gloss, metallic, pearl, matte), black roof, chrome delete, wheel colour and size, factory privacy rear glass, sunroof.</p>
+
+  <h2><span class="n">4</span>Photo AI tab</h2>
+  <ol>
+    <li>Upload a photo of the customer's car.</li>
+    <li>The paint colour is detected in the browser and applied to the 3D car automatically.</li>
+    <li>If AI is enabled, TotalOps also detects make, model, year, body type, finish, wheels and privacy glass, and outlines the windows.</li>
+    <li><b>Tint preview on the photo</b>: windows (from AI or drawn by clicking points) are filled with the chosen film; drag the before/after slider.</li>
+    <li>Optional <b>Generate real 3D mesh</b> turns the photo into a 3D model.</li>
+  </ol>
+  <div class="warn"><b>Needs setup</b>AI detection needs <code>ANTHROPIC_API_KEY</code> and the real 3D mesh needs <code>MESHY_API_KEY</code> in <code>backend/.env.local</code>. Without them, colour detection and manual window outlines still work. Per-window tint is not available on a generated mesh.</div>
+
+  <h2><span class="n">5</span>Design tab</h2>
+  <p><b>Snapshot</b> downloads a PNG. <b>Save design</b> stores the setup (and picture) so you can load it later or attach it to a project.</p>
+  <div class="example">Customer with a white RAV4 in the shop: upload their photo → car turns white SUV in 3D → press <b>Legal max</b> → switch to <b>Inside</b> and <b>Night</b> to show visibility → Save design and attach it to their project.</div>
+</section>
+
+<!-- ======================================================= ADVISOR -->
+<section class="doc" id="advisor" data-title="Smart Advisor">
+  <div class="hero"><div class="eyebrow">AI Studio</div><h1>Smart Film Advisor</h1>
+    <p>Tell it the job and the customer's goals. It ranks every film, picks the darkest legal shade per window, chooses roll widths, plans the cuts and prices the job.</p><span class="path">Menu → Smart Advisor · /advisor</span></div>
+  <div class="why"><b>Why it exists:</b> choosing the right film and roll size takes experience and maths. The Advisor makes every staff member quote like your best installer — and stops illegal or risky installs.</div>
+
+  <h2><span class="n">1</span>Inputs</h2>
+  <ul>
+    <li><b>Segment</b>: automotive or flat glass (residential / commercial).</li>
+    <li>Automotive: body type, factory privacy rear glass, visor strip, sunroof, legal region.</li>
+    <li>Flat glass: a panes table (label, width, height, unit, qty) or <b>Load from project</b>; glass type (single clear, tinted, double glazed, Low-E, laminated, toughened), orientation (N, E, S, W…), climate, partial shading.</li>
+    <li><b>Goals</b> 0–5: heat, privacy, UV, glare, security, clarity, budget. Plus old-film removal and "signal-safe only".</li>
+  </ul>
+
+  <h2><span class="n">2</span>What it calculates</h2>
+  <table>
+    <tr><th>Output</th><th>Meaning</th></tr>
+    <tr><td>Best match + score</td><td>Film with the highest score (0–100) for your goals, with reasons and warnings.</td></tr>
+    <tr><td>Legal shade per zone</td><td>Darkest shade that is still legal on each window after allowing for factory glass.</td></tr>
+    <tr><td>Thermal stress</td><td>Low / medium / high risk of glass cracking on home glass (dark film on double-glazed, Low-E, large west-facing panes…).</td></tr>
+    <tr><td>Per-pane table</td><td>Cut size with trim, the narrowest roll width that fits, or the number of drops if a seam is needed.</td></tr>
+    <tr><td>Cut plan</td><td>Pieces packed on the roll: linear metres, film m² and waste %.</td></tr>
+    <tr><td>Pricing</td><td>Sell price, material cost, labour hours/cost and margin %.</td></tr>
+    <tr><td>Stock check</td><td>Whether you have enough of that film in stock at the store.</td></tr>
+    <tr><td>Savings</td><td>Heat blocked, kWh and $ per year, CO₂ and payback (homes), or cabin temperature drop (cars).</td></tr>
+  </table>
+  <div class="example"><b>Input:</b> SUV, Western Australia, goals heat 5 / privacy 4.<br><b>Result:</b> "Run 50% on the front sides, 20% on the rear sides, 20% on the rear windscreen — the darkest legal combination. 3.09 m² of glass, cut from a 1016 mm roll using 4.21 linear m (28% waste). Parked cabin up to ~9°C cooler."</div>
+  <div class="example"><b>Input:</b> home lounge, two 2400×2100 mm panes + one door, double-glazed, west-facing, goals heat 5, clarity 4.<br><b>Result:</b> spectrally selective film recommended, thermal stress <span class="pill y">medium</span> (confirm with manufacturer), ≈1,475 kWh / $472 saved per year.</div>
+  <div class="tip"><b>Actions</b><b>Apply to project</b> sets the film on the loaded project. <b>Open in 3D</b> shows the same film on the car in the visualizer.</div>
+</section>
+
+<!-- ======================================================= FILMS -->
+<section class="doc" id="films" data-title="Film Library">
+  <div class="hero"><div class="eyebrow">AI Studio</div><h1>Film Library</h1>
+    <p>Your catalogue of window films with their real performance data. The Advisor, the 3D Visualizer, inventory and quotes all read from here.</p><span class="path">Menu → Film Library · /films</span></div>
+  <div class="why"><b>Why it exists:</b> correct film data = correct legal checks, recommendations and prices everywhere else.</div>
+  <ul>
+    <li>Cards with shade swatches, filters (category, segment), search and a show-inactive switch.</li>
+    <li>Create / edit: name, brand, line, category, segments, description, IRR, UVR, reflectivity, signal-safe, tint colour, thickness, warranty, roll widths, cost and sell per m², glass compatibility and the <b>shades table</b>.</li>
+    <li><b>Compare</b> up to 3 films side by side.</li>
+  </ul>
+  <h3>Glossary</h3>
+  <table>
+    <tr><th>Term</th><th>Plain meaning</th></tr>
+    <tr><td>VLT</td><td>Visible Light Transmission — how much light gets through. 5% = very dark, 70% = almost clear.</td></tr>
+    <tr><td>TSER</td><td>Total Solar Energy Rejected — overall heat blocked (higher is cooler).</td></tr>
+    <tr><td>IRR</td><td>Infrared rejection — the heat you feel on your skin.</td></tr>
+    <tr><td>UVR</td><td>UV rejection — protects skin and stops interiors fading (usually 99%).</td></tr>
+    <tr><td>Glare</td><td>How much glare is reduced.</td></tr>
+    <tr><td>Absorptance</td><td>How much solar energy the film soaks up. High values raise thermal-stress risk on some home glass.</td></tr>
+    <tr><td>Reflectivity</td><td>Mirror effect. Automotive film over 10% is flagged.</td></tr>
+    <tr><td>Glass compatibility</td><td>ok / caution / no per glass type. "no" removes the film from Advisor results for that glass.</td></tr>
+  </table>
+  <div class="warn"><b>Delete rule</b>Films used by inventory rolls or projects can't be deleted — mark them inactive.</div>
+</section>
+
+<!-- ======================================================= PROPOSALS -->
+<section class="doc" id="proposals" data-title="Proposals">
+  <div class="hero"><div class="eyebrow">Business</div><h1>Proposals</h1>
+    <p>All quotes in one place — drafts, sent, viewed and approved — with the customer approval link.</p><span class="path">Menu → Proposals · /proposals</span></div>
+  <div class="why"><b>Why it exists:</b> instead of one fixed price, customers choose between options online. Choice raises approval rates and average job value.</div>
+
+  <h2><span class="n">1</span>The proposals page</h2>
+  <ul>
+    <li>Tiles: drafts, awaiting customer, approved value, win rate. Search and segment filter.</li>
+    <li><b>Board</b> view: drag between <span class="pill">Draft</span> → <span class="pill">Sent</span> → <span class="pill">Viewed</span>. Dropping on <span class="pill g">Approved</span> opens the "Record approval" form.</li>
+    <li><b>List</b> view with total, expiry, last activity, open project and copy customer link.</li>
+  </ul>
+
+  <h2><span class="n">2</span>How offer options work</h2>
+  <table>
+    <tr><th>Type</th><th>Rule</th><th>Example</th></tr>
+    <tr><td><b>Alternatives</b></td><td>Options with the same <i>group</i> name — the customer picks one.</td><td>Group "Tint level": Ceramic IR $520 <span class="pill p">Recommended</span> or Carbon $330</td></tr>
+    <tr><td><b>Add-ons</b></td><td>Options with no group — the customer can tick any.</td><td>"Old film removal" $120</td></tr>
+  </table>
+  <p>Each option has line items (from the service catalogue or custom), a discount and an optional "comparison price" shown crossed out. Proposal settings: intro, footer, terms, tax %, valid until, deposit (none / fixed / %), message after approval and a next-step button.</p>
+  <div class="example">Customer picks Ceramic IR ($520) + Removal ($120) = $640 + 10% GST = <b>$704</b>, deposit 50% = $352. Alternatives in the same group are never added together.</div>
+
+  <h2><span class="n">3</span>Customer review link</h2>
+  <p>When you <b>Send</b> a proposal, the customer gets a private page (no login) showing your logo, intro, measured scope and option cards. They choose options, see the live total and deposit, type their name, tick "I acknowledge" and press <b>Approve</b>.</p>
+  <ul>
+    <li>Opening the link marks the proposal <span class="pill y">Viewed</span>.</li>
+    <li>Approving marks it <span class="pill g">Approved</span>, updates the project value and stage, and triggers automations.</li>
+    <li>Expired links ask the customer to contact you. A withdrawn link shows "This link has been withdrawn".</li>
+  </ul>
+  <div class="warn"><b>Locked after invoicing</b>Once an invoice exists, the quote can't be changed. Duplicate the project for a revised scope.</div>
+</section>
+
+<!-- ======================================================= PAYMENTS -->
+<section class="doc" id="payments" data-title="Payments">
+  <div class="hero"><div class="eyebrow">Business</div><h1>Payments</h1>
+    <p>Invoices, deposits, part payments and outstanding balances across all projects.</p><span class="path">Menu → Payments · /payments</span></div>
+  <div class="why"><b>Why it exists:</b> cash flow — see who owes what, chase overdue bills and record every payment against the right job.</div>
+  <ul>
+    <li>Tiles: invoiced, collected, outstanding, overdue (with average days).</li>
+    <li>Filters: unpaid, partial, paid, overdue, deposit only. Each row has a paid-progress bar.</li>
+    <li><b>Record payment</b>: amount (defaults to the balance), method (bank transfer, card terminal, cash, cheque, finance), date, reference, kind (deposit / payment).</li>
+    <li><b>Ledger</b> tab: every payment, newest first, with a total. <b>Export CSV</b>.</li>
+  </ul>
+  <table>
+    <tr><th>Rule</th><th>Why</th></tr>
+    <tr><td>Deposits can be recorded before an invoice, up to the quoted total.</td><td>Customers pay to lock in the booking.</td></tr>
+    <tr><td>Normal payments need an invoice.</td><td>Keeps the books tidy.</td></tr>
+    <tr><td>A payment can't exceed the outstanding balance.</td><td>Prevents typos like $5,000 instead of $500.</td></tr>
+    <tr><td>Paid in full + installation complete → job closes automatically.</td><td>No manual tidy-up.</td></tr>
+  </table>
+  <div class="example">Invoice INV-2052 is $704. A $352 deposit was paid earlier. Record $352 by card → status <span class="pill g">Paid in full</span> → project moves to <b>Job closed</b> → the review-request automation runs 2 hours later.</div>
+  <div class="tip"><b>Note</b>No card is charged — TotalOps records payments taken elsewhere (bank, terminal, cash).</div>
+</section>
+
+<!-- ======================================================= INVENTORY -->
+<section class="doc" id="inventory" data-title="Inventory">
+  <div class="hero"><div class="eyebrow">Business</div><h1>Inventory</h1>
+    <p>Film rolls per store, how much is left, what was used on which job and when to reorder.</p><span class="path">Menu → Inventory · /inventory</span></div>
+  <div class="why"><b>Why it exists:</b> running out of a popular shade on a busy day costs jobs; over-ordering ties up cash.</div>
+  <ul>
+    <li>Tiles: rolls tracked, low stock, area available (m²), stock value.</li>
+    <li>Roll cards show remaining m² with a marker at the reorder point.</li>
+    <li>Create / edit a roll: pick a film from the library (name, brand, cost and sell fill in), shade, store, roll width, length, remaining, reorder point, batch and location.</li>
+  </ul>
+  <table>
+    <tr><th>Action</th><th>What it does</th></tr>
+    <tr><td>Allocate</td><td>Takes m² for a project at the same store (suggests measured area + 15%).</td></tr>
+    <tr><td>Reorder</td><td>Marks the roll as ordered (shows "Ordered ✓" on the dashboard).</td></tr>
+    <tr><td>Receive</td><td>Adds the delivered m² and clears the reorder flag.</td></tr>
+    <tr><td>Adjust</td><td>± correction with a required reason (stock count, damage…). Stock can't go below zero.</td></tr>
+    <tr><td>History</td><td>Every movement with project number and balance.</td></tr>
+  </table>
+  <div class="example">Ceramic IR 35 at Rockingham has 6.1 m² left and a reorder point of 8 m² → it appears in Low stock on the dashboard → press <b>Reorder</b> → when the box arrives press <b>Receive 46 m²</b>.</div>
+</section>
+
+<!-- ======================================================= NOTES -->
+<section class="doc" id="notes" data-title="Notes & tasks">
+  <div class="hero"><div class="eyebrow">Operations</div><h1>Notes &amp; tasks</h1>
+    <p>Internal notes, to-dos and customer reply notes — linked to projects or standalone.</p><span class="path">Menu → Notes &amp; tasks · /notes</span></div>
+  <div class="why"><b>Why it exists:</b> "call the customer back", "order more film" — small jobs that get forgotten if they live on sticky notes.</div>
+  <ul>
+    <li>Tabs: All open, Tasks, Notes, Replies, Done. Search and project filter.</li>
+    <li>Add / edit: kind (note, task, reply), project, text, assigned to, due date.</li>
+    <li>Tick to complete; overdue tasks are highlighted and listed first.</li>
+  </ul>
+  <div class="example">Task "Confirm residential measurements with customer" · assigned to Chloe · due today → shows in Chloe's list and turns red tomorrow if not done.</div>
+  <div class="tip"><b>Automatic tasks</b>The "Call new leads fast" automation creates a task for every new lead.</div>
+</section>
+
+<!-- ======================================================= FILES -->
+<section class="doc" id="files" data-title="Files & photos">
+  <div class="hero"><div class="eyebrow">Operations</div><h1>Files &amp; photos</h1>
+    <p>Every uploaded photo and document across all projects.</p><span class="path">Menu → Files &amp; photos · /files</span></div>
+  <div class="why"><b>Why it exists:</b> before/after photos protect you in warranty disputes, and signed documents should never live only on a phone.</div>
+  <ul>
+    <li>Drag-and-drop upload (several at once), with optional project and category (photo, document…). Max 15 MB per file.</li>
+    <li>Allowed: images (PNG, JPG, WebP, GIF, SVG), PDF, TXT, CSV, Word, Excel, GLB 3D models.</li>
+    <li>Grid or list view, filter by category and project, preview images / PDFs / text, download, delete.</li>
+  </ul>
+  <div class="example">Before tinting, the installer uploads 4 photos of scratched rear glass to the project. If the customer later complains, the photos prove the scratches were already there.</div>
+</section>
+
+<!-- ======================================================= REVIEWS -->
+<section class="doc" id="reviews" data-title="Reviews">
+  <div class="hero"><div class="eyebrow">Operations</div><h1>Reviews</h1>
+    <p>Track customer feedback and review requests.</p><span class="path">Menu → Reviews · /reviews</span></div>
+  <div class="why"><b>Why it exists:</b> Google reviews drive new tint enquiries. Asking every happy customer is the easiest marketing there is.</div>
+  <ul>
+    <li>Average rating and star distribution; status tabs <span class="pill">Draft</span><span class="pill">Queued</span><span class="pill">Sent</span><span class="pill g">Published</span>.</li>
+    <li>Add / edit: project (finished jobs), customer name, rating, quote, platform, status.</li>
+    <li><b>Simulate send</b> writes the review-request SMS to the log (from your "Review request" template).</li>
+  </ul>
+  <div class="tip"><b>Automatic</b>The "Review request" automation sends the request 2 hours after a paid job closes.</div>
+</section>
+
+<!-- ======================================================= LEAD FORMS -->
+<section class="doc" id="lead-forms" data-title="Lead forms">
+  <div class="hero"><div class="eyebrow">Operations</div><h1>Lead forms</h1>
+    <p>Quote-request forms for your website or social media. Every submission becomes a customer and a project automatically.</p><span class="path">Menu → Lead forms · /lead-forms</span></div>
+  <div class="why"><b>Why it exists:</b> no more copying enquiries from email into the CRM — leads arrive ready to work.</div>
+  <ul>
+    <li>Cards show live / paused, number of submissions and the public link (<code>/f/your-form</code>) with copy and open buttons.</li>
+    <li>Edit: name, link slug, heading, intro, fields (Name, Company, Email, Phone, Vehicle, Address, Scope, Message) in any order, segment, receiving store, active.</li>
+    <li><b>Test submission</b> creates a test project; the <b>Submissions</b> drawer lists what came in.</li>
+  </ul>
+  <h3>What happens on submit</h3>
+  <ol>
+    <li>Name is required, plus an email or a phone number.</li>
+    <li>If the email/phone already exists, the existing customer is reused.</li>
+    <li>A project is created in <b>New lead</b> with source "Website form".</li>
+    <li>For automotive forms, the vehicle text is read — e.g. "2023 Ford Ranger" → body type dual-cab ute and its glass template.</li>
+    <li>Notification + the "new lead" automation (e.g. a call-back task).</li>
+  </ol>
+  <div class="example">Put <code>https://your-domain.com/f/get-a-quote</code> behind the "Get a quote" button on your website. Customer submits "2023 Ford Ranger · full ceramic" → PRJ-1080 appears instantly with the Ranger glass sizes loaded.</div>
+  <div class="tip"><b>Spam protection</b>A hidden trap field silently drops bots, and each visitor is limited to 10 submissions a minute.</div>
+</section>
+
+<!-- ======================================================= AUTOMATIONS -->
+<section class="doc" id="automations" data-title="Automations">
+  <div class="hero"><div class="eyebrow">Operations</div><h1>Automations</h1>
+    <p>"When this happens → do that" rules that send messages or create tasks for you.</p><span class="path">Menu → Automations · /automations</span></div>
+  <div class="why"><b>Why it exists:</b> reminders and follow-ups are the first thing a busy shop forgets — automations never forget.</div>
+  <h2><span class="n">1</span>Triggers</h2>
+  <table>
+    <tr><th>Trigger</th><th>When it fires</th></tr>
+    <tr><td>New lead created</td><td>Immediately</td></tr>
+    <tr><td>Proposal sent / approved</td><td>Immediately</td></tr>
+    <tr><td>Proposal sent, no response</td><td>After the delay (e.g. 48 h) if still not approved</td></tr>
+    <tr><td>Appointment booked</td><td>Immediately</td></tr>
+    <tr><td>Day-before appointment reminder</td><td>The day before the visit</td></tr>
+    <tr><td>Installer on the way</td><td>When a visit is dispatched</td></tr>
+    <tr><td>Vehicle ready for pickup</td><td>When shop status is set to Ready</td></tr>
+    <tr><td>Deposit paid / Payment received</td><td>Immediately</td></tr>
+    <tr><td>Installation completed</td><td>Immediately</td></tr>
+    <tr><td>Paid job closed (review request)</td><td>After the delay</td></tr>
+  </table>
+  <h2><span class="n">2</span>Actions</h2>
+  <p><b>Send message</b> (SMS or email, from a template or your own text) or <b>Create task</b>. Each rule has an on/off switch, a run log, and <b>Simulate run</b> to preview the exact message for a chosen project. <b>Run timed checks now</b> forces the delayed rules to be checked.</p>
+  <h3>Message variables</h3>
+  <p><code>{{first_name}}</code> <code>{{name}}</code> <code>{{business}}</code> <code>{{store}}</code> <code>{{store_phone}}</code> <code>{{project}}</code> <code>{{number}}</code> <code>{{vehicle}}</code> <code>{{date}}</code> <code>{{time}}</code> <code>{{balance}}</code> <code>{{link}}</code></p>
+  <div class="example">Template: "Hi <code>{{first_name}}</code>, your <code>{{vehicle}}</code> is ready for pickup at <code>{{store}}</code>!"<br>Sent as: "Hi Mason, your 2023 Ford Ranger XLT is ready for pickup at Rockingham!"</div>
+  <div class="warn"><b>Simulated</b>Messages are logged on the project's Messages tab but not actually sent until an SMS/email provider is connected. Each rule fires only once per event, so customers never get duplicates.</div>
+</section>
+
+<!-- ======================================================= REPORTS -->
+<section class="doc" id="reports" data-title="Reports">
+  <div class="hero"><div class="eyebrow">Operations</div><h1>Reports</h1>
+    <p>Analytics for the whole business, plus CSV/JSON exports.</p><span class="path">Menu → Reports · /reports</span></div>
+  <div class="why"><b>Why it exists:</b> to answer "which store, film and installer makes us the most money?" with numbers, not gut feel.</div>
+  <ul>
+    <li>Range 30 / 90 / 365 days / all time; the store switcher applies.</li>
+    <li>Tiles: pipeline value, won value, closed jobs, invoiced, collected, outstanding, measured m², stock on hand, average job value, win rate.</li>
+    <li>Charts (switch to <b>Tables</b> to see the numbers): projects by stage, by segment, by store (invoiced vs pipeline), conversion funnel (leads → proposals → approved → closed), film usage.</li>
+    <li>Installer leaderboard: completed jobs, hours, value, rating.</li>
+    <li>Exports: projects, contacts, stock, payments, schedule (CSV) and a full JSON backup.</li>
+  </ul>
+  <div class="example">Funnel shows 60 leads → 40 proposals → 12 approved. Approval is the weak step, so you turn on the "Proposal follow-up" automation and add a cheaper alternative option to your packages.</div>
+</section>
+
+<!-- ======================================================= SETTINGS -->
+<section class="doc" id="settings" data-title="Settings">
+  <div class="hero"><div class="eyebrow">Administration</div><h1>Settings</h1>
+    <p>Everything that shapes how your workspace behaves — business details, stores, team, price lists, templates and security.</p><span class="path">Menu → Settings · /settings</span></div>
+  <div class="why"><b>Why it exists:</b> set things up once, and every quote, invoice, message and legal check uses the same correct data.</div>
+  <table>
+    <tr><th>Tab</th><th>What you set</th><th>Example</th></tr>
+    <tr><td>Business profile</td><td>Name, email, phone, address, ABN, website, tax % and label, currency, logo, legal tint region, defaults (labour rate, charge-out rate, electricity price, trim mm, quote validity, deposit %, invoice due days, default terms).</td><td>Region <b>AU-WA</b> → front sides ≥ 35%, rear ≥ 20%, visor strip top 10%.</td></tr>
+    <tr><td>Stores</td><td>Branch name, code, address, phone, colour, bays, opening hours, map position.</td><td>Rockingham: Bay 1, Bay 2, Clean Bay, Mobile Bay · 08:00–16:00.</td></tr>
+    <tr><td>Team</td><td>Installers, sales and office staff: store, title, skills, colour, weekly hours, rating, active.</td><td>Ryan Cooper · Master Automotive Installer · 38 h.</td></tr>
+    <tr><td>Service catalogue</td><td>Reusable priced services (each / m² / hour), minutes, linked film, stores. Archive, restore, duplicate.</td><td>"3M Ceramic IR · Sides &amp; rear windscreen" $520.</td></tr>
+    <tr><td>Proposal packages</td><td>Ready-made offers with options, alternatives, discounts, intro, terms, tax, deposit and validity.</td><td>"Automotive · ceramic package" = Ceramic vs Carbon + optional removal.</td></tr>
+    <tr><td>Message templates</td><td>SMS / email texts with variables and a live phone preview.</td><td>"Appointment reminder".</td></tr>
+    <tr><td>Dealers</td><td>Dealer accounts and their live portal links (copy, open, create a new link).</td><td>City Toyota Fleet → Rockingham.</td></tr>
+    <tr><td>Measurement profiles</td><td>Per segment: survey title, group label, default unit, dimensions on/off, visible sections.</td><td>Residential default unit = mm, group label = "Room".</td></tr>
+    <tr><td>Roles &amp; access</td><td>Describe what each staff role may read / write / delete and in which stores.</td><td>Installer: projects read, finances hidden.</td></tr>
+    <tr><td>Account</td><td>Your admin name, email, phone and password (minimum 8 characters).</td><td>Change the default password on day one.</td></tr>
+    <tr><td>Data &amp; integrations</td><td>Full backup, CSV exports, AI key status and setup help.</td><td>Download a JSON backup every Friday.</td></tr>
+  </table>
+  <div class="warn"><b>Important</b>Only the admin can sign in. Roles document responsibilities for your team but do not create separate logins. Changing defaults never rewrites invoices that were already issued.</div>
+  <div class="tip"><b>First-day checklist</b>1) Account → change password. 2) Business profile → name, logo, tax, region. 3) Stores and Team. 4) Film Library prices. 5) Service catalogue and one proposal package. 6) Turn on the automations you want.</div>
+</section>
+
+    <div class="pager" id="pager"></div>
+  </div>
+</main>
+
+<script>
+  (function () {
+    var links = Array.prototype.slice.call(document.querySelectorAll('#menu a'));
+    var sections = Array.prototype.slice.call(document.querySelectorAll('section.doc'));
+    var ids = links.map(function (a) { return a.getAttribute('href').slice(1); });
+    var crumb = document.getElementById('crumb');
+    var pager = document.getElementById('pager');
+
+    function show(id) {
+      if (ids.indexOf(id) === -1) id = ids[0];
+      sections.forEach(function (s) { s.classList.toggle('active', s.id === id); });
+      links.forEach(function (a) { a.classList.toggle('active', a.getAttribute('href') === '#' + id); });
+      var sec = document.getElementById(id);
+      crumb.textContent = sec.getAttribute('data-title');
+      document.title = sec.getAttribute('data-title') + ' · TotalOps Docs';
+      var i = ids.indexOf(id), prev = ids[i - 1], next = ids[i + 1];
+      var title = function (x) { return document.getElementById(x).getAttribute('data-title'); };
+      pager.innerHTML = (prev ? '<a href="#' + prev + '"><small>← Previous</small>' + title(prev) + '</a>' : '<span style="flex:1"></span>') +
+                        (next ? '<a class="next" href="#' + next + '"><small>Next →</small>' + title(next) + '</a>' : '<span style="flex:1"></span>');
+      document.body.classList.remove('open');
+      requestAnimationFrame(function () { window.scrollTo(0, 0); });
+    }
+
+    window.addEventListener('hashchange', function () { show(location.hash.slice(1)); });
+    show(location.hash.slice(1));
+    window.addEventListener('load', function () { setTimeout(function () { window.scrollTo(0, 0); }, 0); });
+
+    var q = document.getElementById('q');
+    q.addEventListener('input', function () {
+      var term = q.value.trim().toLowerCase(), any = false;
+      links.forEach(function (a) {
+        var sec = document.getElementById(a.getAttribute('href').slice(1));
+        var hit = !term || a.textContent.toLowerCase().indexOf(term) > -1 || sec.textContent.toLowerCase().indexOf(term) > -1;
+        a.style.display = hit ? '' : 'none';
+        if (hit) any = true;
+      });
+      document.querySelectorAll('#menu .group').forEach(function (g) {
+        var visible = Array.prototype.some.call(g.querySelectorAll('a'), function (a) { return a.style.display !== 'none'; });
+        g.style.display = visible ? '' : 'none';
+      });
+      document.getElementById('empty').style.display = any ? 'none' : 'block';
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === '/' && document.activeElement !== q) { e.preventDefault(); q.focus(); }
+    });
+    document.getElementById('menuBtn').addEventListener('click', function () { document.body.classList.toggle('open'); });
+    document.querySelector('.sidebar').addEventListener('click', function (e) { if (e.target === this) document.body.classList.remove('open'); });
+  })();
+</script>
+</body>
+</html>

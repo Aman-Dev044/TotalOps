@@ -321,6 +321,7 @@ export default function LandingPage() {
             <a href="#features" className="hover:text-fg">Features</a>
             <a href="#ai-studio" className="hover:text-fg">AI Studio</a>
             <a href="#faq" className="hover:text-fg">FAQ</a>
+            <a href="/docs.html" className="hover:text-fg">Documentation</a>
             <Link href="/login" className="hover:text-fg">Sign in</Link>
           </nav>
           <p className="flex items-center gap-1.5">
