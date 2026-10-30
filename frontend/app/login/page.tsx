@@ -20,7 +20,7 @@ function LoginForm() {
   const { login, admin, ready } = useAuth();
   const router = useRouter();
   const params = useSearchParams();
-  const next = params.get('next') && params.get('next')!.startsWith('/') && !params.get('next')!.startsWith('//') ? params.get('next')! : '/';
+  const next = params.get('next') && params.get('next')!.startsWith('/') && !params.get('next')!.startsWith('//') ? params.get('next')! : '/dashboard';
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [show, setShow] = useState(false);

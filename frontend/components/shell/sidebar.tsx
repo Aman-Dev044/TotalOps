@@ -19,7 +19,7 @@ export function Sidebar({ collapsed, onToggle, onNavigate }: { collapsed: boolea
   return (
     <div className="flex h-full flex-col">
       <div className={cn('flex h-16 items-center border-b border-line', collapsed ? 'justify-center px-2' : 'justify-between px-4')}>
-        <Link href="/" onClick={onNavigate}>
+        <Link href="/dashboard" onClick={onNavigate}>
           <Logo collapsed={collapsed} />
         </Link>
         {onToggle && !collapsed ? (

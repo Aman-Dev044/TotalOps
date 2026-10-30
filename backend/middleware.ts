@@ -3,14 +3,18 @@ import { jwtVerify } from 'jose';
 
 const PUBLIC_PATHS = [/^\/api\/auth\/login\/?$/, /^\/api\/public\//, /^\/api\/health\/?$/];
 
+/**
+ * Allowed origins come from .env: CORS_ORIGINS (comma separated, "*" allows any origin),
+ * falling back to FRONTEND_URL. CORS_ALLOW_LOCALHOST=false disables the localhost convenience rule.
+ */
 function allowedOrigin(origin: string) {
   if (!origin) return '';
-  const list = (process.env.FRONTEND_URL || 'http://localhost:3000')
+  const list = (process.env.CORS_ORIGINS || process.env.FRONTEND_URL || 'http://localhost:3000')
     .split(',')
     .map((s) => s.trim().replace(/\/$/, ''))
     .filter(Boolean);
-  if (list.includes(origin)) return origin;
-  if (/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) return origin;
+  if (list.includes('*') || list.includes(origin)) return origin;
+  if (process.env.CORS_ALLOW_LOCALHOST !== 'false' && /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) return origin;
   return '';
 }
 

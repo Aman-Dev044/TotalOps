@@ -10,7 +10,7 @@ export const NAV: NavGroup[] = [
   {
     label: 'Overview',
     items: [
-      { href: '/', label: 'Dashboard', icon: LayoutDashboard, keywords: 'home overview kpi' },
+      { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, keywords: 'home overview kpi' },
       { href: '/jobs', label: 'My Day', icon: ClipboardList, keywords: 'jobs installer run sheet today' },
       { href: '/notifications', label: 'Notifications', icon: Bell, keywords: 'activity alerts' },
     ],

@@ -1,4 +1,4 @@
-import { cn } from './ui';
+import cn from 'clsx';
 
 export function LogoMark({ size = 36, className }: { size?: number; className?: string }) {
   return (

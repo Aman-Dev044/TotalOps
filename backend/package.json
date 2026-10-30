@@ -4,9 +4,9 @@
   "private": true,
   "description": "TotalOps CRM — Next.js API backend (MongoDB)",
   "scripts": {
-    "dev": "next dev -p 4000",
+    "dev": "node scripts/next.mjs dev",
     "build": "next build",
-    "start": "next start -p 4000",
+    "start": "node scripts/next.mjs start",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

@@ -1,10 +1,12 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { Providers } from '@/components/providers';
+import { SITE_DESCRIPTION, SITE_URL } from '@/lib/site';
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: { default: 'TotalOps — Window Tinting CRM', template: '%s · TotalOps' },
-  description: 'TotalOps — the complete operating system for automotive, residential and commercial window tinting teams.',
+  description: SITE_DESCRIPTION,
   icons: { icon: '/icon.svg' },
 };
 
