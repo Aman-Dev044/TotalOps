@@ -1,0 +1,83 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: 220 33% 98%;
+  --fg: 224 32% 12%;
+  --card: 0 0% 100%;
+  --muted: 220 24% 95%;
+  --muted-fg: 220 12% 44%;
+  --line: 220 18% 89%;
+  --primary: 243 82% 62%;
+  --primary-fg: 0 0% 100%;
+  --accent: 36 95% 54%;
+  --success: 152 62% 38%;
+  --warning: 34 92% 48%;
+  --danger: 0 74% 54%;
+  --info: 199 89% 46%;
+  color-scheme: light;
+}
+
+.dark {
+  --bg: 228 24% 7%;
+  --fg: 220 20% 94%;
+  --card: 228 20% 10.5%;
+  --muted: 228 16% 15%;
+  --muted-fg: 220 12% 62%;
+  --line: 228 14% 19%;
+  --primary: 243 90% 69%;
+  --primary-fg: 0 0% 100%;
+  --accent: 38 96% 58%;
+  --success: 152 55% 48%;
+  --warning: 36 92% 56%;
+  --danger: 0 80% 62%;
+  --info: 199 89% 56%;
+  color-scheme: dark;
+}
+
+* { border-color: hsl(var(--line)); }
+html, body { height: 100%; }
+body {
+  background: hsl(var(--bg));
+  color: hsl(var(--fg));
+  font-feature-settings: 'cv11', 'ss01';
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection { background: hsl(var(--primary) / 0.25); }
+
+/* Scrollbars */
+* { scrollbar-width: thin; scrollbar-color: hsl(var(--muted-fg) / 0.3) transparent; }
+*::-webkit-scrollbar { width: 9px; height: 9px; }
+*::-webkit-scrollbar-thumb { background: hsl(var(--muted-fg) / 0.25); border-radius: 999px; border: 2px solid transparent; background-clip: padding-box; }
+
+@layer components {
+  .card { @apply rounded-2xl border border-line bg-card shadow-soft; }
+  .card-pad { @apply p-5; }
+  .input {
+    @apply h-10 w-full rounded-xl border border-line bg-card px-3 text-sm text-fg outline-none transition placeholder:text-muted-fg/70
+      focus:border-primary/60 focus:ring-4 focus:ring-primary/15 disabled:cursor-not-allowed disabled:opacity-60;
+  }
+  textarea.input { @apply h-auto min-h-[84px] py-2 leading-relaxed; }
+  select.input { @apply pr-8; }
+  .label { @apply mb-1.5 block text-xs font-semibold uppercase tracking-wide text-muted-fg; }
+  .chip { @apply inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold; }
+  .table-base { @apply w-full text-sm; }
+  .table-base th { @apply whitespace-nowrap border-b border-line bg-muted/60 px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wide text-muted-fg first:rounded-tl-xl last:rounded-tr-xl; }
+  .table-base td { @apply border-b border-line/70 px-3 py-3 align-middle; }
+  .table-base tbody tr { @apply transition-colors hover:bg-muted/40; }
+  .gradient-text { @apply bg-gradient-to-r from-primary via-fuchsia-500 to-accent bg-clip-text text-transparent; }
+  .glass { @apply border border-white/10 bg-white/60 backdrop-blur-xl dark:bg-white/5; }
+}
+
+/* Subtle animated grid used on hero banners */
+.bg-grid {
+  background-image: linear-gradient(hsl(var(--fg) / 0.05) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--fg) / 0.05) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+@media print {
+  .no-print { display: none !important; }
+  body { background: white; }
+}
