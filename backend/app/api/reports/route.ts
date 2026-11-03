@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { Film, Project, Roll, Staff, Store } from '@/lib/models';
-import { addDays, handler, round2, todayStr } from '@/lib/http';
+import { addDays, handler, round2, storeIdList, storeScope, todayStr } from '@/lib/http';
 import { STAGE_LABELS, STAGE_ORDER, measuredArea, paymentSummary, projectValue } from '@/lib/project';
 
 export const dynamic = 'force-dynamic';
@@ -9,8 +9,9 @@ export const GET = handler(async (req: NextRequest) => {
   const sp = req.nextUrl.searchParams;
   const range = sp.get('range') || '90';
   const from = range === 'all' ? '0000-00-00' : addDays(todayStr(), -(Number(range) || 90) + 1);
-  const storeId = sp.get('storeId');
-  const projects = await Project.find({ archived: false, ...(storeId ? { storeId } : {}) }).lean<any[]>();
+  const scopeIds = storeIdList(sp.get('storeId'));
+  const scope = storeScope(sp.get('storeId'));
+  const projects = await Project.find({ archived: false, ...(scope ? { storeId: scope } : {}) }).lean<any[]>();
   const inRange = projects.filter((p) => todayStr(new Date(p.createdAt)) >= from || (p.invoice?.issuedAt || '') >= from);
   const [rolls, staff, stores, films] = await Promise.all([Roll.find({ archived: { $ne: true } }).lean<any[]>(), Staff.find({}).lean<any[]>(), Store.find({}).lean<any[]>(), Film.find({}).select('name brand').lean<any[]>()]);
 
@@ -22,7 +23,7 @@ export const GET = handler(async (req: NextRequest) => {
     const list = inRange.filter((p) => p.segment === s);
     return { segment: s, count: list.length, value: round2(list.reduce((t, p) => t + projectValue(p), 0)), areaM2: round2(list.reduce((t, p) => t + measuredArea(p.measurements).areaM2, 0)) };
   });
-  const byStore = stores.map((st) => {
+  const byStore = stores.filter((st) => !scopeIds.length || scopeIds.includes(String(st._id))).map((st) => {
     const list = inRange.filter((p) => String(p.storeId) === String(st._id));
     const invoiced = list.filter((p) => p.invoice && p.invoice.issuedAt >= from).reduce((t, p) => t + p.invoice.total, 0);
     return { store: st.name, color: st.color, projects: list.length, invoiced: round2(invoiced), pipeline: round2(list.filter((p) => p.stage !== 'closed').reduce((t, p) => t + projectValue(p), 0)) };

@@ -16,6 +16,13 @@ export type OfferOption = { id: string; title: string; filmLabel?: string; group
 export type Deposit = { mode: 'none' | 'fixed' | 'percent'; value: number };
 export type Package = { _id: Id; name: string; segment: Segment; description?: string; validDays: number; taxRate: number; storeIds: Id[]; intro?: string; footer?: string; terms?: string; afterApprovalMessage?: string; nextStepLabel?: string; nextStepUrl?: string; showScope: boolean; deposit: Deposit; options: OfferOption[]; archived: boolean };
 export type Template = { _id: Id; name: string; channel: 'sms' | 'email'; purpose: string; subject?: string; body: string; archived: boolean };
+export type InboundSms = { at: string; from: string; body: string; contactId?: Id | null; contactName?: string; projectId?: Id | null; projectNumber?: string; test?: boolean };
+export type Franchisee = {
+  _id: Id; name: string; principalName?: string; principalTitle?: string; email?: string; phone?: string; legalName?: string; abn?: string; storeIds: Id[];
+  sms: { number?: string; senderId?: string; provider?: string; verified?: boolean; verifiedAt?: string };
+  banking: { bankName?: string; accountName?: string; bsb?: string; accountNumber?: string };
+  webhookToken: string; inbound: InboundSms[]; color: string; notes?: string; active: boolean;
+};
 export type Dealer = { _id: Id; name: string; contactName?: string; phone?: string; email?: string; storeId?: Id; token: string; notes?: string; active: boolean };
 
 export type Pane = { id: string; label: string; zone?: Zone; windowType?: string; width: number; height: number; unit: string; qty: number; filmId?: string; selected: boolean; notes?: string; glass?: string };
@@ -28,7 +35,7 @@ export type Appointment = {
   shopStatus: 'booked' | 'arrived' | 'in_bay' | 'installing' | 'ready' | 'collected'; dealer?: string; notes?: string; reminder: boolean; checkedInAt?: string; completedAt?: string;
 };
 export type Payment = { _id: Id; kind: 'deposit' | 'payment'; amount: number; method: string; date: string; reference?: string; createdAt: string };
-export type Message = { _id: Id; direction: 'in' | 'out'; channel: string; body: string; from?: string; simulated: boolean; createdAt: string };
+export type Message = { _id: Id; direction: 'in' | 'out'; channel: string; body: string; from?: string; line?: string; simulated: boolean; createdAt: string };
 export type Proposal = {
   status: 'draft' | 'sent' | 'viewed' | 'approved'; token?: string | null; options: OfferOption[]; intro?: string; footer?: string; terms?: string; taxRate: number; validUntil: string;
   deposit: Deposit; showScope?: boolean; afterApprovalMessage?: string; nextStepLabel?: string; nextStepUrl?: string; internalSelection?: string[]; selectedOptionIds?: string[];

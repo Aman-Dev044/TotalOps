@@ -76,7 +76,8 @@ function Advisor() {
   const router = useRouter();
   const { data: meta } = useMeta();
   const { data: settings } = useSettings();
-  const { storeId } = useStoreScope();
+  const { storeIds } = useStoreScope();
+  const storeId = storeIds.length === 1 ? storeIds[0] : '';
   const { data: projects } = useApi<Project[]>('/projects?limit=400');
 
   const [segment, setSegment] = useState<Segment>('automotive');

@@ -2,8 +2,9 @@ import fs from 'fs/promises';
 import path from 'path';
 import type { Model } from 'mongoose';
 import {
-  Activity, Automation, Contact, Dealer, Design, FileDoc, Film, LeadForm, Note, Package, Project, Review, Roll, Service, Staff, Store, Template,
+  Activity, Automation, Contact, Dealer, Design, FileDoc, Film, Franchisee, LeadForm, Note, Package, Project, Review, Roll, Service, Staff, Store, Template,
 } from './models';
+import { prepareFranchisee } from './franchise';
 import { conflict, uid } from './http';
 import { logActivity } from './project';
 
@@ -34,6 +35,9 @@ export const RESOURCES: Record<string, Resource> = {
     beforeDelete: async (id) => {
       if (await Project.exists({ storeId: id })) throw conflict('This store has projects. Reassign them before deleting the store.');
       if (await Staff.exists({ storeId: id })) throw conflict('This store has team members. Move them to another store first.');
+    },
+    afterDelete: async (doc) => {
+      await Franchisee.updateMany({ storeIds: doc._id }, { $pull: { storeIds: doc._id } });
     },
   },
   staff: {
@@ -66,6 +70,16 @@ export const RESOURCES: Record<string, Resource> = {
     beforeUpdate: (d) => {
       delete d.movements; // movements only change through /api/ops/inventory/:id
     },
+  },
+  franchisees: {
+    model: Franchisee, label: 'Franchisee', search: ['name', 'legalName', 'principalName', 'abn', 'sms.number', 'email'], sort: { name: 1 },
+    beforeCreate: async (d) => {
+      await prepareFranchisee(d);
+      d.webhookToken = uid() + uid();
+      d.inbound = [];
+    },
+    beforeUpdate: (d, id) => prepareFranchisee(d, id),
+    afterCreate: async (doc) => logActivity('settings', 'Franchisee added', doc.name, undefined, '/settings?tab=franchisees'),
   },
   services: { model: Service, label: 'Service', search: ['name', 'variant', 'coverage', 'detail'], sort: { segment: 1, name: 1 } },
   packages: { model: Package, label: 'Proposal package', search: ['name', 'description'], sort: { name: 1 } },

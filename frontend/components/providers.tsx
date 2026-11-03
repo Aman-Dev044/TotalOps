@@ -4,6 +4,8 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useS
 import { SWRConfig } from 'swr';
 import { Toaster } from 'sonner';
 import { api, getToken, setToken } from '@/lib/api';
+import { useApi } from '@/lib/hooks';
+import type { Franchisee, Store } from '@/lib/types';
 import { ConfirmProvider } from './ui';
 
 /* ---------------- Theme ---------------- */
@@ -77,28 +79,114 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
   return <AuthCtx.Provider value={{ admin, ready, login, logout, refresh }}>{children}</AuthCtx.Provider>;
 }
 
-/* ---------------- Store scope (global store filter) ---------------- */
-const StoreCtx = createContext<{ storeId: string; setStoreId: (id: string) => void }>({ storeId: '', setStoreId: () => {} });
+/* ---------------- Store scope (perspective + store filter) ---------------- */
+/** Matches no store — used when a franchisee perspective has no stores assigned yet. */
+const NO_STORE = '000000000000000000000000';
+
+type StoreScope = {
+  /** Query value for ?storeId=: '' (all), one id, or "a,b" (a franchisee's stores). */
+  storeId: string;
+  /** Stores in scope; empty means every store (head office view). */
+  storeIds: string[];
+  /** Store list for pickers, limited to the current perspective. */
+  scopedStores: Store[];
+  /** Single store picked in the header ('' = the whole perspective). */
+  pickedStoreId: string;
+  /** Best store to pre-fill new records with. */
+  defaultStoreId: string;
+  franchiseeId: string;
+  franchisee: Franchisee | null;
+  setStoreId: (id: string) => void;
+  setFranchiseeId: (id: string) => void;
+  inScope: (storeId: unknown) => boolean;
+};
+
+const StoreCtx = createContext<StoreScope>({
+  storeId: '', storeIds: [], scopedStores: [], pickedStoreId: '', defaultStoreId: '', franchiseeId: '', franchisee: null,
+  setStoreId: () => {}, setFranchiseeId: () => {}, inScope: () => true,
+});
 export const useStoreScope = () => useContext(StoreCtx);
 
+function readLocal(key: string) {
+  try {
+    return localStorage.getItem(key) || '';
+  } catch {
+    return '';
+  }
+}
+function writeLocal(key: string, value: string) {
+  try {
+    if (value) localStorage.setItem(key, value);
+    else localStorage.removeItem(key);
+  } catch {
+    /* ignore */
+  }
+}
+
 function StoreScopeProvider({ children }: { children: React.ReactNode }) {
-  const [storeId, setStore] = useState('');
+  const { admin } = useAuth();
+  const [picked, setPicked] = useState('');
+  const [frId, setFrId] = useState('');
+  const [cachedIds, setCachedIds] = useState<string[]>([]);
+  const { data: franchisees } = useApi<Franchisee[]>(admin ? '/franchisees' : null, { revalidateOnFocus: false, dedupingInterval: 60_000 });
+  const { data: stores } = useApi<Store[]>(admin ? '/stores' : null, { revalidateOnFocus: false, dedupingInterval: 60_000 });
+
   useEffect(() => {
+    setPicked(readLocal('totalops.store'));
+    setFrId(readLocal('totalops.franchisee'));
     try {
-      setStore(localStorage.getItem('totalops.store') || '');
+      setCachedIds(JSON.parse(readLocal('totalops.franchisee.stores') || '[]'));
     } catch {
       /* ignore */
     }
   }, []);
+
+  const franchisee = useMemo(() => (frId && franchisees ? franchisees.find((f) => f._id === frId) || null : null), [frId, franchisees]);
+
+  // A deleted franchisee falls back to the head office view.
+  useEffect(() => {
+    if (frId && franchisees && !franchisee) {
+      setFrId('');
+      writeLocal('totalops.franchisee', '');
+    }
+  }, [frId, franchisees, franchisee]);
+
+  // Until the list loads, scope to the stores remembered from last time so we never flash every store's data.
+  const frStores = frId ? (franchisee ? franchisee.storeIds.map(String) : cachedIds) : null;
+  useEffect(() => {
+    if (franchisee) writeLocal('totalops.franchisee.stores', JSON.stringify(franchisee.storeIds));
+  }, [franchisee]);
+
+  const pickedOk = picked && (!frStores || frStores.includes(picked)) ? picked : '';
+  const storeIds = pickedOk ? [pickedOk] : frStores || [];
+  const storeId = pickedOk || (frStores ? frStores.join(',') || NO_STORE : '');
+  const scopedStores = useMemo(() => (stores || []).filter((s) => !frStores || frStores.includes(s._id)), [stores, frStores?.join(',')]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const setStoreId = useCallback((id: string) => {
-    setStore(id);
-    try {
-      localStorage.setItem('totalops.store', id);
-    } catch {
-      /* ignore */
-    }
+    setPicked(id);
+    writeLocal('totalops.store', id);
   }, []);
-  return <StoreCtx.Provider value={{ storeId, setStoreId }}>{children}</StoreCtx.Provider>;
+  const setFranchiseeId = useCallback(
+    (id: string) => {
+      setFrId(id);
+      writeLocal('totalops.franchisee', id);
+      const f = franchisees?.find((x) => x._id === id);
+      setCachedIds(f?.storeIds || []);
+      writeLocal('totalops.franchisee.stores', JSON.stringify(f?.storeIds || []));
+      setStoreId(''); // a new perspective starts with all of its stores
+    },
+    [franchisees, setStoreId],
+  );
+  const inScope = useCallback((sid: unknown) => !storeId || storeIds.includes(String(sid ?? '')), [storeId, storeIds.join(',')]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const value = useMemo<StoreScope>(
+    () => ({
+      storeId, storeIds, scopedStores, pickedStoreId: pickedOk, defaultStoreId: pickedOk || frStores?.[0] || '', franchiseeId: frId, franchisee,
+      setStoreId, setFranchiseeId, inScope,
+    }),
+    [storeId, scopedStores, pickedOk, frId, franchisee, setStoreId, setFranchiseeId, inScope], // eslint-disable-line react-hooks/exhaustive-deps
+  );
+  return <StoreCtx.Provider value={value}>{children}</StoreCtx.Provider>;
 }
 
 export function Providers({ children }: { children: React.ReactNode }) {

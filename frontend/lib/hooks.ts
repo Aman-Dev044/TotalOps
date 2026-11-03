@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import useSWR, { mutate as globalMutate, type SWRConfiguration } from 'swr';
 import { api } from './api';
-import type { Dealer, Film, Meta, Settings, Staff, Store } from './types';
+import type { Dealer, Film, Franchisee, Meta, Settings, Staff, Store } from './types';
 
 /** SWR wrapper around the authenticated API. Pass null to skip. */
 export function useApi<T = any>(path: string | null, config?: SWRConfiguration<T>) {
@@ -17,6 +17,7 @@ export const useStores = () => useApi<Store[]>('/stores', STATIC);
 export const useStaff = () => useApi<Staff[]>('/staff', STATIC);
 export const useFilms = () => useApi<Film[]>('/films', STATIC);
 export const useDealers = () => useApi<Dealer[]>('/dealers', STATIC);
+export const useFranchisees = () => useApi<Franchisee[]>('/franchisees', STATIC);
 
 /** Revalidates every cached request whose key starts with one of the prefixes (e.g. '/projects'). */
 export function refresh(...prefixes: string[]) {

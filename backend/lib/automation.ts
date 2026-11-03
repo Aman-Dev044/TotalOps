@@ -1,6 +1,7 @@
 import { Automation, Contact, Note, Project, Settings, Store, Template } from './models';
 import { addDays, publicUrl, todayStr } from './http';
 import { logActivity, paymentSummary } from './project';
+import { lineForStore } from './franchise';
 
 export const TRIGGERS: { key: string; label: string; timed?: boolean }[] = [
   { key: 'lead_created', label: 'New lead created' },
@@ -58,7 +59,7 @@ async function execute(auto: any, project: any, key: string, manual = false) {
   } else {
     await Project.updateOne(
       { _id: project._id },
-      { $push: { messages: { direction: 'out', channel: auto.channel || 'sms', body, from: `Automation · ${auto.name}`, simulated: true } } },
+      { $push: { messages: { direction: 'out', channel: auto.channel || 'sms', body, from: `Automation · ${auto.name}`, line: (auto.channel || 'sms') === 'sms' ? await lineForStore(project.storeId) : '', simulated: true } } },
     );
     result = `${(auto.channel || 'sms').toUpperCase()} queued (simulated)`;
   }

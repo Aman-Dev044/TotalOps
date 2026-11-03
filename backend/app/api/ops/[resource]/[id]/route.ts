@@ -1,9 +1,10 @@
 import { NextRequest } from 'next/server';
-import { Activity, Automation, Dealer, LeadForm, Project, Review, Roll, Template } from '@/lib/models';
+import { Activity, Automation, Dealer, Franchisee, LeadForm, Project, Review, Roll, Template } from '@/lib/models';
 import { bad, body, handler, isId, notFound, num, round2, str, uid } from '@/lib/http';
 import { logActivity } from '@/lib/project';
 import { renderTemplate, runManually, sweep } from '@/lib/automation';
 import { submitLead } from '@/lib/leads';
+import { isE164, normalizePhone, routeInbound } from '@/lib/franchise';
 
 export const dynamic = 'force-dynamic';
 
@@ -107,6 +108,31 @@ export const POST = handler<{ resource: string; id: string }>(async (req: NextRe
     const d = await Dealer.findByIdAndUpdate(id, { $set: { token: uid() + uid() } }, { new: true }).lean();
     if (!d) throw notFound('Dealer not found');
     return d;
+  }
+
+  if (resource === 'franchisees') {
+    const fr: any = await Franchisee.findById(id).lean();
+    if (!fr) throw notFound('Franchisee not found');
+    if (action === 'verify') {
+      // No SMS provider is connected yet, so verification checks the number format and ownership only.
+      if (!fr.sms?.number || !isE164(fr.sms.number)) throw bad('Add a valid SMS line number before verifying.');
+      const d = await Franchisee.findByIdAndUpdate(id, { $set: { 'sms.verified': true, 'sms.verifiedAt': new Date() } }, { new: true }).lean();
+      await logActivity('message', 'SMS line verified', `${fr.name} · ${fr.sms.number}`, undefined, '/settings?tab=franchisees');
+      return d;
+    }
+    if (action === 'regenerate') {
+      return Franchisee.findByIdAndUpdate(id, { $set: { webhookToken: uid() + uid() } }, { new: true }).lean();
+    }
+    if (action === 'test') {
+      if (!fr.sms?.number) throw bad('Add an SMS line number first.');
+      const from = normalizePhone(data.from) || '+61400000000';
+      const entry = await routeInbound(fr, from, str(data.body, 'Message', { max: 1600 }) || 'Test message from TotalOps', true);
+      return { entry, franchisee: await Franchisee.findById(id).lean() };
+    }
+    if (action === 'clearInbound') {
+      return Franchisee.findByIdAndUpdate(id, { $set: { inbound: [] } }, { new: true }).lean();
+    }
+    throw bad('Unknown franchisee action');
   }
 
   throw bad('Unknown resource action');

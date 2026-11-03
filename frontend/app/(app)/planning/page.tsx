@@ -18,7 +18,7 @@ import { itemColor, mondayOf } from '@/components/schedule/layout';
 type Mode = 'day' | 'week';
 
 export default function PlanningPage() {
-  const { storeId: scope } = useStoreScope();
+  const { storeIds: scope } = useStoreScope();
   const [mode, setMode] = useState<Mode>('week');
   const [cursor, setCursor] = useState(todayStr());
   const [segment, setSegment] = useState('');
@@ -41,9 +41,9 @@ export default function PlanningPage() {
 
   const activeStores: Store[] = useMemo(() => {
     const all = stores || [];
-    const ids = picked ?? (scope ? [scope] : all.map((s) => s._id));
+    const ids = picked ?? (scope.length ? scope : all.map((s) => s._id));
     return all.filter((s) => ids.includes(s._id));
-  }, [stores, picked, scope]);
+  }, [stores, picked, scope.join(',')]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const items = useMemo(() => {
     const s = q.trim().toLowerCase();

@@ -68,15 +68,16 @@ function TeamInner() {
 
 /* ------------------------------------------------------------ Members */
 function Members({ staff, stores, focus, onEdit }: { staff: Staff[]; stores: Store[]; focus: string | null; onEdit: (s: Staff) => void }) {
-  const { storeId: scope } = useStoreScope();
+  const { pickedStoreId, inScope, scopedStores } = useStoreScope();
   const [store, setStore] = useState<string | null>(null);
-  const storeId = store ?? scope;
+  const storeId = store ?? pickedStoreId;
+  const inView = staff.filter((s) => inScope(s.storeId));
   const [q, setQ] = useState('');
   const confirm = useConfirm();
   const today = todayStr();
   const { data: upcoming } = useApi<ScheduleItem[]>(`/schedule?from=${today}&to=${addDays(today, 13)}`);
 
-  const list = staff.filter((s) => (!storeId || String(s.storeId) === storeId) && (!q || [s.name, s.title, ...(s.skills || [])].join(' ').toLowerCase().includes(q.toLowerCase())));
+  const list = inView.filter((s) => (!storeId || String(s.storeId) === storeId) && (!q || [s.name, s.title, ...(s.skills || [])].join(' ').toLowerCase().includes(q.toLowerCase())));
   const nextJob = (id: string) => (upcoming || []).find((i) => (String(i.installerId) === id || i.coInstallers.some((c) => c._id === id)) && i.status !== 'completed');
   const weekDone = (id: string) => (upcoming || []).filter((i) => String(i.installerId) === id && i.status === 'completed').length;
 
@@ -106,8 +107,8 @@ function Members({ staff, stores, focus, onEdit }: { staff: Staff[]; stores: Sto
       <Card className="mb-4 flex flex-wrap items-center gap-3 p-3">
         <SearchInput className="w-full sm:w-80" value={q} onChange={setQ} placeholder="Search installer by name, specialty, skill…" />
         <Select className="h-10 w-52" value={storeId} onChange={(e) => setStore(e.target.value)} aria-label="Filter store">
-          <option value="">All stores ({staff.length} staff)</option>
-          {stores.map((s) => <option key={s._id} value={s._id}>{s.name} ({staff.filter((x) => String(x.storeId) === s._id).length})</option>)}
+          <option value="">All stores ({inView.length} staff)</option>
+          {scopedStores.map((s) => <option key={s._id} value={s._id}>{s.name} ({staff.filter((x) => String(x.storeId) === s._id).length})</option>)}
         </Select>
       </Card>
       {list.length === 0 ? (
@@ -178,11 +179,11 @@ function Members({ staff, stores, focus, onEdit }: { staff: Staff[]; stores: Sto
 
 /* ------------------------------------------------------------ Workload */
 function Workload({ staff, stores }: { staff: Staff[]; stores: Store[] }) {
-  const { storeId } = useStoreScope();
+  const { inScope } = useStoreScope();
   const [week, setWeek] = useState(mondayOf(todayStr()));
   const days = Array.from({ length: 7 }, (_, k) => addDays(week, k));
   const { data, error, mutate } = useApi<ScheduleItem[]>(`/schedule?from=${week}&to=${days[6]}`);
-  const techs = staff.filter((s) => s.role === 'installer' && s.active && (!storeId || String(s.storeId) === storeId));
+  const techs = staff.filter((s) => s.role === 'installer' && s.active && inScope(s.storeId));
 
   const rows = useMemo(
     () =>

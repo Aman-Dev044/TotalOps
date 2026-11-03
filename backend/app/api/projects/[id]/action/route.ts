@@ -6,6 +6,7 @@ import {
   STAGE_LABELS, autoAdvance, buildInvoice, loadProject, logActivity, measuredArea, paymentSummary, proposalTotals, stageError, validateProposal, validateSelection,
 } from '@/lib/project';
 import { fire, renderTemplate } from '@/lib/automation';
+import { lineForStore } from '@/lib/franchise';
 
 export const dynamic = 'force-dynamic';
 
@@ -461,7 +462,9 @@ export const POST = handler<{ id: string }>(async (req: NextRequest, { id }) => 
     case 'message.send': {
       const text = str(data.body, 'Message', { required: true, max: 1600 });
       const rendered = await renderTemplate(text, p.toObject());
-      p.messages.push({ direction: 'out', channel: data.channel === 'email' ? 'email' : 'sms', body: rendered, from: 'Workspace Admin', simulated: true });
+      const channel = data.channel === 'email' ? 'email' : 'sms';
+      const line = channel === 'sms' ? await lineForStore(p.storeId) : '';
+      p.messages.push({ direction: 'out', channel, body: rendered, from: 'Workspace Admin', line, simulated: true });
       await logActivity('message', 'Customer message (simulated)', `${p.number} · ${rendered.slice(0, 80)}`, id);
       break;
     }

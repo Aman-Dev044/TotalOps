@@ -20,7 +20,7 @@ type SortKey = 'updated' | 'value' | 'created' | 'number';
 function ProjectsInner() {
   const router = useRouter();
   const params = useSearchParams();
-  const { storeId } = useStoreScope();
+  const { storeId, storeIds, franchisee } = useStoreScope();
   const { data: meta } = useMeta();
   const { data: stores } = useStores();
   const [view, setView] = useLocalState<'table' | 'grid'>('projects.view', 'table');
@@ -114,7 +114,7 @@ function ProjectsInner() {
         <div className="mt-2 flex flex-wrap items-center gap-3 px-1 text-xs text-muted-fg">
           <span><b className="text-fg">{list.length}</b> projects</span>
           <span>Value <b className="text-fg">{money(totalValue, { cents: false })}</b></span>
-          {storeId ? <span className="flex items-center gap-1"><StoreIcon className="h-3 w-3" /> {stores?.find((s) => s._id === storeId)?.name}</span> : null}
+          {storeId ? <span className="flex items-center gap-1"><StoreIcon className="h-3 w-3" /> {(stores || []).filter((s) => storeIds.includes(s._id)).map((s) => s.name).join(', ') || franchisee?.name}</span> : null}
         </div>
       </Card>
 

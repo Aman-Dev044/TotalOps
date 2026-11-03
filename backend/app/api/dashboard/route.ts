@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { Activity, Contact, Note, Project, Roll, Staff, Store } from '@/lib/models';
-import { addDays, handler, round2, todayStr } from '@/lib/http';
+import { addDays, handler, round2, storeScope, todayStr } from '@/lib/http';
 import { STAGE_LABELS, STAGE_ORDER, paymentSummary, projectValue } from '@/lib/project';
 import { sweep } from '@/lib/automation';
 
@@ -12,17 +12,17 @@ const minutes = (t: string) => Number(t.slice(0, 2)) * 60 + Number(t.slice(3, 5)
 export const GET = handler(async (req: NextRequest) => {
   await sweep();
   const sp = req.nextUrl.searchParams;
-  const storeId = sp.get('storeId') || '';
+  const scope = storeScope(sp.get('storeId'));
   const rangeDays = sp.get('range') === 'all' ? 3650 : Math.max(1, Number(sp.get('range')) || 30);
   const today = todayStr();
   const from = addDays(today, -rangeDays + 1);
   const prevFrom = addDays(from, -rangeDays);
 
-  const base: any = storeId ? { storeId } : {};
+  const base: any = scope ? { storeId: scope } : {};
   const [projects, rolls, staff, stores, activity, tasks] = await Promise.all([
     Project.find({ ...base, archived: false }).lean<any[]>(),
-    Roll.find({ archived: { $ne: true }, ...(storeId ? { storeId } : {}) }).lean<any[]>(),
-    Staff.find({ active: true, ...(storeId ? { storeId } : {}) }).lean<any[]>(),
+    Roll.find({ archived: { $ne: true }, ...base }).lean<any[]>(),
+    Staff.find({ active: true, ...base }).lean<any[]>(),
     Store.find({}).lean<any[]>(),
     Activity.find({}).sort({ createdAt: -1 }).limit(12).lean<any[]>(),
     Note.find({ kind: 'task', done: false }).sort({ dueDate: 1 }).limit(20).lean<any[]>(),

@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs';
 import {
-  Activity, Admin, Automation, Contact, Dealer, Film, LeadForm, Note, Package, Project, Review, Roll, Service, Settings, Staff, Store, Template, nextSeq,
+  Activity, Admin, Automation, Contact, Dealer, Film, Franchisee, LeadForm, Note, Package, Project, Review, Roll, Service, Settings, Staff, Store, Template, nextSeq,
 } from './models';
 import { addDays, todayStr, uid } from './http';
 import { BODY_TYPES } from './engine/vehicles';
@@ -209,6 +209,24 @@ async function seedDemo() {
     { name: "Brett's Prestige Auto", contactName: 'Brett Campbell', phone: '0400 555 101', email: 'brett@prestigeauto.example', storeId: MDH._id, token: uid() + uid() },
     { name: 'City Toyota Fleet', contactName: 'Hannah Lee', phone: '0400 555 102', email: 'fleet@citytoyota.example', storeId: RKH._id, token: uid() + uid() },
     { name: 'Premier Holden', contactName: 'Greg Walsh', phone: '0400 555 103', email: 'greg@premier.example', storeId: CNG._id, token: uid() + uid() },
+  ]);
+
+  /* Franchisees — each owns two stores and has its own SMS line */
+  await Franchisee.insertMany([
+    {
+      name: 'Apex Tint Group', principalName: 'Dave Miller', principalTitle: 'Franchise Principal', email: 'dave@apextint.example', phone: '0400 600 101',
+      legalName: 'Apex Tinting Pty Ltd', abn: '45 128 992 411', storeIds: [MDH._id, RKH._id], color: '#6366f1',
+      sms: { number: '+61488958100', senderId: 'Dave @ TotalOps Mandurah & Rockingham', provider: 'twilio', verified: true, verifiedAt: new Date() },
+      banking: { bankName: 'Commonwealth Bank', accountName: 'Apex Tinting Pty Ltd', bsb: '066-123', accountNumber: '1098 4421' },
+      webhookToken: uid() + uid(),
+    },
+    {
+      name: 'South West Tinting Co', principalName: 'Sarah Jenkins', principalTitle: 'Franchise Director', email: 'sarah@swtinting.example', phone: '0400 600 102',
+      legalName: 'South West Tinting Enterprises Pty Ltd', abn: '88 621 445 902', storeIds: [JDK._id, CNG._id], color: '#10b981',
+      sms: { number: '+61488941200', senderId: 'Sarah @ TotalOps South Metro', provider: 'twilio', verified: true, verifiedAt: new Date() },
+      banking: { bankName: 'ANZ Business', accountName: 'South West Tinting Enterprises', bsb: '016-440', accountNumber: '4491 8832' },
+      webhookToken: uid() + uid(),
+    },
   ]);
 
   /* Automations */

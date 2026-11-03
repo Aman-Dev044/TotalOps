@@ -41,6 +41,7 @@ export function MessagesTab({ p, run, busy }: TabProps) {
                     {m.channel === 'email' ? <Mail className="h-3 w-3" /> : <Smartphone className="h-3 w-3" />}
                     {auto ? <Bot className="h-3 w-3" /> : null}
                     {m.from || (out ? 'You' : 'Customer')} · {fmtDateTime(m.createdAt)}
+                    {m.line ? <span className="font-mono">· {out ? 'via' : 'to'} {m.line}</span> : null}
                   </p>
                 </div>
               </motion.div>

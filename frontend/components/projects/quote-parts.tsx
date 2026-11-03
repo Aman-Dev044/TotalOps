@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { CheckCircle2, CreditCard, FileSignature, Package as PackageIcon, Printer, Search, Trash2 } from 'lucide-react';
-import { useApi, useMeta, useSettings } from '@/lib/hooks';
+import { useApi, useFranchisees, useMeta, useSettings } from '@/lib/hooks';
 import { fmtDate, money, todayStr } from '@/lib/format';
 import type { OfferOption, Package, ProjectDetail, Proposal, Service } from '@/lib/types';
 import { Badge, Button, Card, CardHeader, Checkbox, EmptyState, Field, Input, Modal, Progress, Select, useConfirm } from '@/components/ui';
@@ -152,19 +152,23 @@ export function CustomerPreview({ open, onClose, p, draft }: { open: boolean; on
 /* ---------- Invoice ---------- */
 export function InvoicePreview({ open, onClose, p }: { open: boolean; onClose: () => void; p: ProjectDetail }) {
   const { data: settings } = useSettings();
+  const { data: franchisees } = useFranchisees();
   const inv = p.invoice;
   if (!inv) return null;
   const b = settings?.business;
+  // Stores owned by a franchisee invoice under that franchisee's legal entity and bank account.
+  const fr = franchisees?.find((f) => f.active !== false && f.storeIds.includes(String(p.storeId)));
+  const bank = fr?.banking;
   return (
     <Modal open={open} onClose={onClose} size="lg" title="Invoice preview" description="Customer-facing document" footer={<Button icon={Printer} onClick={() => window.print()}>Print / save PDF</Button>}>
       <style>{'@media print { body * { visibility: hidden !important; } #invoice-print, #invoice-print * { visibility: visible !important; } #invoice-print { position: fixed; inset: 0; padding: 32px; background: white; color: black; } }'}</style>
       <div id="invoice-print" className="space-y-5 text-sm">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="font-display text-xl font-extrabold">{b?.name}</p>
-            <p className="text-muted-fg">{b?.address}</p>
-            <p className="text-muted-fg">{b?.phone} · {b?.email}</p>
-            {b?.abn ? <p className="text-muted-fg">ABN {b.abn}</p> : null}
+            <p className="font-display text-xl font-extrabold">{fr?.legalName || b?.name}</p>
+            {fr ? <p className="text-muted-fg">Trading as {fr.name} · {b?.name}</p> : <p className="text-muted-fg">{b?.address}</p>}
+            <p className="text-muted-fg">{[fr?.phone || b?.phone, fr?.email || b?.email].filter(Boolean).join(' · ')}</p>
+            {fr?.abn || b?.abn ? <p className="text-muted-fg">ABN {fr?.abn || b?.abn}</p> : null}
           </div>
           <div className="text-right">
             <p className="font-display text-2xl font-extrabold text-primary">TAX INVOICE</p>
@@ -199,6 +203,13 @@ export function InvoicePreview({ open, onClose, p }: { open: boolean; onClose: (
           <div className="flex justify-between text-success"><span>Payments received</span><span>−{money(p.totals.paid)}</span></div>
           <div className="flex justify-between font-bold"><span>Balance due</span><span>{money(p.totals.balance)}</span></div>
         </div>
+        {bank?.bsb || bank?.accountNumber ? (
+          <div className="rounded-xl border border-line p-3">
+            <p className="label">Pay by bank transfer</p>
+            <p>{bank.bankName} · {bank.accountName || fr?.legalName}</p>
+            <p className="font-mono text-muted-fg">BSB {bank.bsb || '—'} · Acc {bank.accountNumber || '—'} · Ref {inv.number}</p>
+          </div>
+        ) : null}
         {inv.terms ? <div><p className="label">Terms & warranty</p><p className="text-muted-fg">{inv.terms}</p></div> : null}
         {inv.acceptedBy ? <p className="text-xs text-muted-fg">Accepted by {inv.acceptedBy}</p> : null}
       </div>

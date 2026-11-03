@@ -248,6 +248,37 @@ export const Dealer = model(
   ),
 );
 
+/* ---------- Franchisees (legal entities that own one or more stores, each with its own SMS line) ---------- */
+export const Franchisee = model(
+  'Franchisee',
+  schema(
+    {
+      name: { type: String, required: true, trim: true }, // trading name, e.g. "Apex Tint Group"
+      principalName: String,
+      principalTitle: { type: String, default: 'Franchise Principal' },
+      email: String,
+      phone: String,
+      legalName: String,
+      abn: String,
+      storeIds: { type: [ObjectId], default: [] },
+      sms: {
+        number: String, // E.164, e.g. +61488958100
+        senderId: String,
+        provider: { type: String, default: 'twilio' },
+        verified: { type: Boolean, default: false },
+        verifiedAt: Date,
+      },
+      webhookToken: { type: String, index: true },
+      inbound: { type: [Mixed], default: [] }, // last inbound SMS log (newest first)
+      banking: { bankName: String, accountName: String, bsb: String, accountNumber: String },
+      color: { type: String, default: '#6366f1' },
+      notes: String,
+      active: { type: Boolean, default: true },
+    },
+    opts,
+  ),
+);
+
 /* ---------- Projects (the operational core) ---------- */
 const AppointmentSchema = schema(
   {
@@ -289,6 +320,7 @@ const MessageSchema = schema(
     channel: { type: String, default: 'sms' },
     body: { type: String, required: true },
     from: String,
+    line: String, // franchisee SMS line the message went out on / came in through
     simulated: { type: Boolean, default: true },
   },
   { timestamps: true },

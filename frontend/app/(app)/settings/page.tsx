@@ -3,7 +3,7 @@
 import { Suspense } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Building2, CarFront, Database, FileStack, MessageSquare, Package2, Ruler, Settings as SettingsIcon, ShieldCheck, Store, UserRound, Users } from 'lucide-react';
+import { Building2, CarFront, Database, FileStack, MessageSquare, Network, Package2, Ruler, Settings as SettingsIcon, ShieldCheck, Store, UserRound, Users } from 'lucide-react';
 import { PageHeader, PageLoader, cn } from '@/components/ui';
 import { BusinessTab } from '@/components/admin/business-tab';
 import { StoresTab } from '@/components/admin/stores-tab';
@@ -12,6 +12,7 @@ import { ServicesTab } from '@/components/admin/services-tab';
 import { PackagesTab } from '@/components/admin/packages-tab';
 import { TemplatesTab } from '@/components/admin/templates-tab';
 import { DealersTab } from '@/components/admin/dealers-tab';
+import { FranchiseesTab } from '@/components/admin/franchisees-tab';
 import { ProfilesTab } from '@/components/admin/profiles-tab';
 import { RolesTab } from '@/components/admin/roles-tab';
 import { AccountTab } from '@/components/admin/account-tab';
@@ -21,6 +22,7 @@ const TABS = [
   { key: 'business', label: 'Business profile', icon: Building2, group: 'Workspace', C: BusinessTab },
   { key: 'stores', label: 'Stores & bays', icon: Store, group: 'Workspace', C: StoresTab },
   { key: 'team', label: 'Team members', icon: Users, group: 'Workspace', C: TeamTab },
+  { key: 'franchisees', label: 'Franchisees & SMS lines', icon: Network, group: 'Workspace', C: FranchiseesTab },
   { key: 'roles', label: 'Roles & access', icon: ShieldCheck, group: 'Workspace', C: RolesTab },
   { key: 'services', label: 'Service catalogue', icon: Package2, group: 'Libraries', C: ServicesTab },
   { key: 'packages', label: 'Proposal packages', icon: FileStack, group: 'Libraries', C: PackagesTab },

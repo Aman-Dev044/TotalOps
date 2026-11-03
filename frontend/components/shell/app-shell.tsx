@@ -3,14 +3,14 @@
 import { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Menu as MenuIcon, Moon, Plus, Search, Store, Sun } from 'lucide-react';
+import { Building2, Menu as MenuIcon, Moon, Plus, Search, Store, Sun } from 'lucide-react';
 import { Sidebar } from './sidebar';
 import { CommandPalette } from './command-palette';
 import { NotificationBell } from './notification-bell';
 import { useAuth, useStoreScope, useTheme } from '../providers';
 import { Button, Kbd, cn } from '../ui';
 import { LogoMark } from '../logo';
-import { useLocalState, useSettings, useStores } from '@/lib/hooks';
+import { useFranchisees, useLocalState, useSettings } from '@/lib/hooks';
 import { setCurrency } from '@/lib/format';
 
 export function AppShell({ children }: { children: React.ReactNode }) {
@@ -21,8 +21,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [mobile, setMobile] = useState(false);
   const [palette, setPalette] = useState(false);
   const { theme, toggle } = useTheme();
-  const { storeId, setStoreId } = useStoreScope();
-  const { data: stores } = useStores();
+  const { pickedStoreId, setStoreId, scopedStores, franchiseeId, franchisee, setFranchiseeId } = useStoreScope();
+  const { data: franchisees } = useFranchisees();
   const { data: settings } = useSettings();
 
   useEffect(() => {
@@ -91,11 +91,31 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </span>
             </button>
             <div className="ml-auto flex items-center gap-1.5">
+              {franchisees?.length ? (
+                <div className="relative hidden xl:block">
+                  <Building2 className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-primary" />
+                  <select
+                    aria-label="Switch perspective"
+                    title="Perspective: head office sees every store, a franchisee sees only its own stores"
+                    value={franchiseeId}
+                    onChange={(e) => setFranchiseeId(e.target.value)}
+                    className={cn('input h-9 w-56 cursor-pointer pl-8 text-xs font-semibold', franchisee ? 'border-primary/40 bg-primary/5 text-primary' : '')}
+                  >
+                    <option value="">Franchisor (All stores)</option>
+                    {franchisees.map((f) => (
+                      <option key={f._id} value={f._id}>
+                        {f.name}
+                        {f.active ? '' : ' (inactive)'}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              ) : null}
               <div className="relative hidden md:block">
                 <Store className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-fg" />
-                <select aria-label="Switch store data" value={storeId} onChange={(e) => setStoreId(e.target.value)} className="input h-9 w-44 cursor-pointer pl-8 text-xs font-semibold">
-                  <option value="">All stores</option>
-                  {(stores || []).map((s) => (
+                <select aria-label="Switch store data" value={pickedStoreId} onChange={(e) => setStoreId(e.target.value)} className="input h-9 w-44 cursor-pointer pl-8 text-xs font-semibold">
+                  <option value="">{franchisee ? `All ${franchisee.name.split(' ')[0]} stores` : 'All stores'}</option>
+                  {scopedStores.map((s) => (
                     <option key={s._id} value={s._id}>
                       {s.name}
                     </option>
@@ -115,6 +135,20 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </Button>
             </div>
           </div>
+          {franchisee ? (
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-primary/20 bg-primary/5 px-4 py-1.5 text-xs sm:px-6">
+              <span className="flex items-center gap-1.5 font-semibold text-primary">
+                <Building2 className="h-3.5 w-3.5" /> Viewing as {franchisee.name}
+              </span>
+              <span className="text-muted-fg">
+                {scopedStores.map((s) => s.name).join(' · ') || 'No stores assigned yet'}
+                {franchisee.sms?.number ? ` · SMS ${franchisee.sms.number}` : ''}
+              </span>
+              <button type="button" onClick={() => setFranchiseeId('')} className="ml-auto font-semibold text-primary hover:underline">
+                Back to head office
+              </button>
+            </div>
+          ) : null}
         </header>
         <motion.main key={pathname} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25, ease: [0.2, 0.7, 0.2, 1] }} className="mx-auto w-full max-w-[1600px] px-4 py-6 sm:px-6 lg:py-8">
           {children}

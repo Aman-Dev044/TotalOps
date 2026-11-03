@@ -25,7 +25,7 @@ export function NewProjectModal({ open, onClose, contactId }: Props) {
   const { data: meta } = useMeta();
   const { data: stores } = useStores();
   const { data: staff } = useStaff();
-  const { storeId } = useStoreScope();
+  const { defaultStoreId } = useStoreScope();
   const { data: contacts } = useApi<Contact[]>(open ? '/contacts?limit=1000' : null);
   const [mode, setMode] = useState<'new' | 'existing'>('new');
   const [existingId, setExistingId] = useState('');
@@ -35,11 +35,11 @@ export function NewProjectModal({ open, onClose, contactId }: Props) {
 
   useEffect(() => {
     if (!open) return;
-    setF({ ...EMPTY, storeId: storeId || '' });
+    setF({ ...EMPTY, storeId: defaultStoreId || '' });
     setMode(contactId ? 'existing' : 'new');
     setExistingId(contactId || '');
     setContactQ('');
-  }, [open, contactId, storeId]);
+  }, [open, contactId, defaultStoreId]);
 
   useEffect(() => {
     if (!f.storeId && stores?.length) setF((x) => ({ ...x, storeId: stores[0]._id }));

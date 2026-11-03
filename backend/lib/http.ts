@@ -95,6 +95,17 @@ export function isId(v: unknown): v is string {
   return typeof v === 'string' && mongoose.isValidObjectId(v);
 }
 
+/** Parses a ?storeId= scope that may list several stores ("a,b,c" — a franchisee's perspective). */
+export function storeIdList(raw: string | null | undefined) {
+  return Array.from(new Set((raw || '').split(',').map((s) => s.trim()).filter((s) => isId(s))));
+}
+
+/** Mongo condition for a store scope: undefined (all stores), one id, or { $in: ids }. */
+export function storeScope(raw: string | null | undefined) {
+  const ids = storeIdList(raw);
+  return ids.length === 0 ? undefined : ids.length === 1 ? ids[0] : { $in: ids };
+}
+
 export function uid() {
   return crypto.randomUUID().replace(/-/g, '').slice(0, 16);
 }

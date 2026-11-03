@@ -251,20 +251,20 @@ export default function InventoryPage() {
 function RollModal({ roll, onClose, onSaved }: { roll: Roll | 'new' | null; onClose: () => void; onSaved: () => void }) {
   const { data: films } = useFilms();
   const { data: stores } = useStores();
-  const { storeId } = useStoreScope();
+  const { defaultStoreId } = useStoreScope();
   const [f, setF] = useState<RollForm>(EMPTY);
   const [busy, setBusy] = useState(false);
   const isNew = roll === 'new';
 
   useEffect(() => {
     if (!roll) return;
-    if (roll === 'new') setF({ ...EMPTY, storeId: storeId || stores?.[0]?._id || '' });
+    if (roll === 'new') setF({ ...EMPTY, storeId: defaultStoreId || stores?.[0]?._id || '' });
     else
       setF({
         filmId: roll.filmId || '', name: roll.name, brand: roll.brand || '', shade: roll.shade?.toString() ?? '', storeId: roll.storeId || '', widthMm: String(roll.widthMm), lengthM: String(roll.lengthM),
         remainingM2: String(roll.remainingM2), reorderAtM2: String(roll.reorderAtM2), costPerM2: String(roll.costPerM2), sellPerM2: String(roll.sellPerM2), batch: roll.batch || '', location: roll.location || '',
       });
-  }, [roll, storeId, stores]);
+  }, [roll, defaultStoreId, stores]);
 
   const set = (k: keyof RollForm, v: string) => setF((s) => ({ ...s, [k]: v }));
   const film = films?.find((x) => x._id === f.filmId);

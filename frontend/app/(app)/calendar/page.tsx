@@ -30,7 +30,7 @@ export default function CalendarPage() {
   const [cursor, setCursor] = useState(todayStr());
   const [installerId, setInstallerId] = useState('');
   const [type, setType] = useState('');
-  const { storeId } = useStoreScope();
+  const { storeId, defaultStoreId, inScope } = useStoreScope();
   const { data: staff } = useStaff();
   const { data: meta } = useMeta();
   const [draft, setDraft] = useState<AppointmentDraft | null>(null);
@@ -74,9 +74,9 @@ export default function CalendarPage() {
     return m;
   }, [data]);
 
-  const book = (date: string, start = '09:00') => setDraft({ date, start, end: fromMin(Math.min(toMin(start) + 120, 23 * 60)), storeId: storeId || undefined, installerId: installerId || undefined });
+  const book = (date: string, start = '09:00') => setDraft({ date, start, end: fromMin(Math.min(toMin(start) + 120, 23 * 60)), storeId: defaultStoreId || undefined, installerId: installerId || undefined });
   const days = view === 'day' ? [cursor] : Array.from({ length: 7 }, (_, k) => addDays(range.from, k));
-  const installers = (staff || []).filter((s) => s.role === 'installer' && (!storeId || String(s.storeId) === storeId));
+  const installers = (staff || []).filter((s) => s.role === 'installer' && inScope(s.storeId));
 
   return (
     <div>

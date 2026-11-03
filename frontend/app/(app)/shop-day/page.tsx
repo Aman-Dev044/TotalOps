@@ -24,9 +24,10 @@ const FLOW_CLS: Record<string, string> = {
 };
 
 export default function ShopDayPage() {
-  const { storeId: scope } = useStoreScope();
+  const { storeId: scope, storeIds: scopeIds, pickedStoreId, scopedStores, defaultStoreId } = useStoreScope();
   const [store, setStore] = useState<string | null>(null);
-  const storeId = store ?? scope;
+  const picked = store ?? pickedStoreId;
+  const storeId = picked || scope;
   const [date, setDate] = useState(todayStr());
   const [account, setAccount] = useState('all');
   const { data: stores } = useStores();
@@ -77,7 +78,7 @@ export default function ShopDayPage() {
     }
   };
 
-  const visibleDealers = (dealers || []).filter((d) => d.active !== false && (!storeId || !d.storeId || d.storeId === storeId));
+  const visibleDealers = (dealers || []).filter((d) => d.active !== false && (!d.storeId || (picked ? d.storeId === picked : !scopeIds.length || scopeIds.includes(d.storeId))));
 
   return (
     <div>
@@ -91,7 +92,7 @@ export default function ShopDayPage() {
             <Button variant="outline" icon={RefreshCw} loading={isValidating} onClick={async () => { await mutate(); setSynced(new Date().toISOString()); }}>
               Refresh
             </Button>
-            <Button icon={Plus} onClick={() => setDraft({ date, start: '08:30', end: '11:30', type: 'installation', storeId: storeId || undefined })}>
+            <Button icon={Plus} onClick={() => setDraft({ date, start: '08:30', end: '11:30', type: 'installation', storeId: picked || defaultStoreId || undefined })}>
               Book vehicle
             </Button>
           </>
@@ -105,9 +106,9 @@ export default function ShopDayPage() {
           <Button size="icon" variant="ghost" aria-label="Next day" onClick={() => setDate(addDays(date, 1))}><ChevronRight className="h-4 w-4" /></Button>
           {date !== todayStr() ? <Button size="sm" variant="ghost" onClick={() => setDate(todayStr())}>Today</Button> : null}
         </div>
-        <Select className="h-9 w-44" value={storeId} onChange={(e) => setStore(e.target.value)} aria-label="Store">
+        <Select className="h-9 w-44" value={picked} onChange={(e) => setStore(e.target.value)} aria-label="Store">
           <option value="">All stores</option>
-          {(stores || []).map((s) => <option key={s._id} value={s._id}>{s.name}</option>)}
+          {scopedStores.map((s) => <option key={s._id} value={s._id}>{s.name}</option>)}
         </Select>
         <Select className="h-9 w-60" value={account} onChange={(e) => setAccount(e.target.value)} aria-label="Dealership / account">
           <option value="all">All accounts (retail & dealers)</option>

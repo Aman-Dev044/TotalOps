@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { Contact, Dealer, Film, Project, Staff, Store } from '@/lib/models';
-import { addDays, bad, handler, todayStr } from '@/lib/http';
+import { addDays, bad, handler, storeIdList, todayStr } from '@/lib/http';
 import { STAGE_LABELS } from '@/lib/project';
 
 export const dynamic = 'force-dynamic';
@@ -28,7 +28,7 @@ export const GET = handler(async (req: NextRequest) => {
   ]);
   const by = (list: any[]) => new Map(list.map((x) => [String(x._id), x]));
   const cm = by(contacts), stm = by(staff), sm = by(stores), fm = by(films), dm = by(dealers);
-  const storeId = sp.get('storeId');
+  const storeIds = storeIdList(sp.get('storeId'));
   const installerId = sp.get('installerId');
   const type = sp.get('type');
   const status = sp.get('status');
@@ -39,7 +39,7 @@ export const GET = handler(async (req: NextRequest) => {
     for (const a of p.appointments || []) {
       if (a.date < from || a.date > to) continue;
       if (!withCancelled && a.status === 'cancelled') continue;
-      if (storeId && String(a.storeId || p.storeId) !== storeId) continue;
+      if (storeIds.length && !storeIds.includes(String(a.storeId || p.storeId))) continue;
       if (installerId && String(a.installerId) !== installerId && !(a.coInstallerIds || []).map(String).includes(installerId)) continue;
       if (type && a.type !== type) continue;
       if (status && a.status !== status) continue;
